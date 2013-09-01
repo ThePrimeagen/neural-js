@@ -10,12 +10,12 @@ module.exports = {
      */
     compile: function() {
 
-        var srcPath = './lib/';
+        var srcPath = './lib';
         var externals = './external/';
-        var out = './static/src/';
+        var out = './static/src';
         var debug = true;
         var b = browserify()
-            .add('./lib/');
+            .add(externals + 'index.js');
 
         // Adds the externals
         browserifyExternals(b, externals);
@@ -26,7 +26,7 @@ module.exports = {
                     if (!err) {
                         var bundlePath = path.join(out, 'bundle.js');
 
-                        console.log("Writing Bundle: " + bundlePath + " : Html to: " + htmlPath);
+                        console.log("Writing Bundle: " + bundlePath + " : Html to: " + out);
                         fs.writeFile(bundlePath, src, function(err) {
                             if (err) {
                                 console.log('Error JS(' + srcPath + '): ' + err);
@@ -34,6 +34,8 @@ module.exports = {
                         });
                     }
                 });
+            } else {
+                console.log(err);
             }
         });
     }
