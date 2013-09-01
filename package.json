@@ -1,0 +1,19 @@
+{
+    "name": "neural-js",
+    "author": [
+        "Michael Paulson <michael.b.paulson@gmail.com>"
+    ],
+    "version": "0.0.1",
+    "description": "Kick ass neural network for javascript",
+    "dependencies": {
+        "rx": "*",
+        "rxjs-jquery": "*",
+        "ix": "1.0.2",
+        "express": "*",
+        "optimist": "*",
+        "browserify": "*",
+        "mkpath": "*",
+        "lodash": "*",
+        "rxjs-fs": "*"
+    }
+}
