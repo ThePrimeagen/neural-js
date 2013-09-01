@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Truth Tables | CI - Neural Networks</title>
+    <script type="text/javascript" src="/src/bundle.js"></script>
+    <script type="text/javascript">
+        var NJS = require('NeuralJS');
+        var tables = require('truth-tables');
+        var $ = require('jquery');
+
+        $(function() {
+            var andNJS = NJS({
+                teacher: tables.AND(),
+                layers: 1
+            });
+
+            // Trains the network
+            NJS.train();
+        });
+    </script>
+</head>
+<body>
+
+</body>
+</html>

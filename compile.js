@@ -46,5 +46,8 @@ function browserifyExternals(b, externals) {
     b.require(externals + 'jquery.js', {expose: 'jquery'});
     b.require(externals + 'rx.js', {expose: 'rx'});
     b.require(externals + 'rx.binding.js', {expose: 'rxjs-bindings'});
+    b.require(externals + 'Observable.js', {expose: 'Observable'});
     b.require('lodash', {expose: 'lodash'});
+    b.require('./lib/NeuralJS', {expose: 'NeuralJS'});
+    b.require('./lib/truth-tables', {expose: 'truth-tables'});
 }
