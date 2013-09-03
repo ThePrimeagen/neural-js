@@ -20,7 +20,7 @@ module.exports = {
         // Adds the externals
         browserifyExternals(b, externals);
 
-        b.bundle({debug: debug}, function(err, src) {
+        b.bundle({debug: false}, function(err, src) {
             if (!err) {
                 mkpath(out, function(err) {
                     if (!err) {
@@ -48,6 +48,6 @@ function browserifyExternals(b, externals) {
     b.require(externals + 'rx.binding.js', {expose: 'rxjs-bindings'});
     b.require(externals + 'Observable.js', {expose: 'Observable'});
     b.require('lodash', {expose: 'lodash'});
-    b.require('./lib/NeuralJS', {expose: 'NeuralJS'});
+    b.require('./lib/neural-networks/NeuralNetwork', {expose: 'NeuralNetwork'});
     b.require('./lib/truth-tables', {expose: 'truth-tables'});
 }
