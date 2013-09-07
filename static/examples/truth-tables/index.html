@@ -9,78 +9,73 @@
         var $ = require('jquery');
         var NetworkUtil = require('NetworkUtil');
 
+        /**
+         * @param options
+         * @returns {NeuralNetwork}
+         */
         function getNeuralNetwork(options) {
             var settings = $.extend({
-                hiddenLayerCount: 2,
-                hiddenLayerNeuronCount: 5
+                inputLayerCount: Number($('#inputs').val()),
+                hiddenLayerCount: Number($('#hiddenLayerCount').val()),
+                hiddenLayerNeuronCount: Number($('#hiddenLayerLength').val())
             }, options);
             return new ANN(settings);
         }
 
         function getTrainingSet() {
-            // TODO: Add types
-            return tables.AND();
+            return tables[$('#data-set').val()]();
         }
 
         $(function() {
-
             var t = getTrainingSet();
             var network = getNeuralNetwork();
+            var $output = $('#output');
+            var $network = $('#network');
 
-            $('#submit').click(function() {
-                var a = $('#a').val();
-                var b = $('#b').val();
-
-                var out = network.test([a, b]);
-
-                $('#output').html(out.toString());
+            $('#test').click(function() {
+                var results = NetworkUtil.five2Training(network, t);
+                $output.html(results);
+                $network.html(network.toString());
             });
 
             $('#train').click(function() {
-                NetworkUtil.train(network, t, Number($('#n').val()));
-                $('#output').html(network.toString());
+                NetworkUtil.train(network, t, Number($('#button-panel #n').val()));
+                $output.html(network.getOutput());
+                $network.html(network.toString());
             });
 
-            $('#converge').click(function() {
-                NetworkUtil.convergeNetwork(network, t);
-                var message = 'Converged!<br/>'
-
-                if (!NetworkUtil.validate(network, t)) {
-                    message = 'Did not converge!<br/>';
-                }
-                $('#output').html(message + network.toString());
+            $('#train-once').click(function() {
+                NetworkUtil.trainOnce(network, t);
+                $output.html(network.getOutput());
+                $network.html(network.toString());
             });
 
-            $('#reset').click(function() {
+            $('#new').click(function() {
                 network = getNeuralNetwork();
-            });
-
-            $('#super-train').click(function() {
-                var n = Number($('#x').val());
-                var data = [];
-
-                for (var i = 0; i < n; i++) {
-                    NetworkUtil.convergeNetwork(network, t);
-                    data.push(network.getStats());
-
-                    network = getNeuralNetwork();
-                    t = getTrainingSet();
-                }
-
-                for (var i = 0; i < data.length; i++) {
-                    $('#output').append(data[i] + '<br/>');
-                }
+                t = getTrainingSet();
             });
         });
     </script>
 </head>
 <body>
     Try Training: <br/>
-    a: <input type='text' id='a'> b: <input type='text' id='b'><br/>
-    <button id='submit'>See output</button>
-    <button id='train'>Train again</button><input type='text' id='n'>
-    <button id='converge'>Train till convergence</button><br/>
-    <button id='super-train'>Test Data Generation</button><input type='text' id='x'>
+    <div id='controls'>
+        Inputs: <input type='text' id='inputs' value='2'>
+        HiddenLayerLength: <input type='text' id='hiddenLayerLength' value='2'>
+        HiddenLayerCount: <input type='text' id='hiddenLayerCount' value='5'>
+        DataSet:
+        <select id='data-set'>
+            <option selected=selected value='XplusY'>x + y</option>
+            <option value='XY'>x * y</option>
+        </select>
+        <button id='new'>Create ANN</button>
+    </div>
+    <div id='button-panel'>
+        <button id='train'>Train</button><input type='text' id='n'><br/>
+        <button id='train-once'>Train Once</button><br/>
+        <button id='test'>Test</button>
+    </div>
     <div id='output'></div>
+    <div id='network'></div>
 </body>
 </html>
