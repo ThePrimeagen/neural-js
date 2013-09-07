@@ -26,11 +26,25 @@
             return tables[$('#data-set').val()]();
         }
 
+        function setUi() {
+            var inputs = Number($('#inputs').val());
+            var $inputDiv = $('.inputs');
+            $inputDiv.empty();
+
+            for (var i = 0; i < inputs; i++) {
+                $inputDiv.append('<input type="text" id="input-' + i + '" value="' + i + '">');
+            }
+        }
+
+
         $(function() {
-            var t = getTrainingSet();
-            var network = getNeuralNetwork();
             var $output = $('#output');
             var $network = $('#network');
+            var t;
+            /** @type NeuralNetwork */
+            var network;
+
+            reset();
 
             $('#test').click(function() {
                 var results = NetworkUtil.five2Training(network, t);
@@ -45,15 +59,37 @@
             });
 
             $('#train-once').click(function() {
-                NetworkUtil.trainOnce(network, t);
+                var n = Number($('#button-panel #x').val());
+                for (var i = 0; i < n; i++) {
+
+                    NetworkUtil.trainOnce(network, t);
+                }
                 $output.html(network.getOutput());
                 $network.html(network.toString());
             });
 
             $('#new').click(function() {
-                network = getNeuralNetwork();
-                t = getTrainingSet();
+                reset();
             });
+
+            $('#manual-test').click(function() {
+                var inputs = [];
+                var inputCount = Number($('#inputs').val());
+
+                for (var i = 0; i < inputCount; i++) {
+                    inputs.push(Number($('#input-' + i).val()));
+                }
+
+                network.test(inputs);
+                $output.html(network.getOutput());
+                $network.html(network.toString());
+            });
+
+            function reset() {
+                t = getTrainingSet();
+                network = getNeuralNetwork();
+                setUi();
+            }
         });
     </script>
 </head>
@@ -71,8 +107,11 @@
         <button id='new'>Create ANN</button>
     </div>
     <div id='button-panel'>
+        Test with input:
+        <div class='inputs'>
+        </div> <button id='manual-test'>Manual Test</button><br/>
         <button id='train'>Train</button><input type='text' id='n'><br/>
-        <button id='train-once'>Train Once</button><br/>
+        <button id='train-once'>Train Once</button><input type='text' id='x'><br/>
         <button id='test'>Test</button>
     </div>
     <div id='output'></div>
