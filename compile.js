@@ -49,5 +49,6 @@ function browserifyExternals(b, externals) {
     b.require(externals + 'Observable.js', {expose: 'Observable'});
     b.require('lodash', {expose: 'lodash'});
     b.require('./lib/neural-networks/NeuralNetwork', {expose: 'NeuralNetwork'});
+    b.require('./lib/neural-networks/lib/NetworkUtil', {expose: 'NetworkUtil'});
     b.require('./lib/truth-tables', {expose: 'truth-tables'});
 }

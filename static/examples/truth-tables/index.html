@@ -7,29 +7,78 @@
         var ANN = require('NeuralNetwork');
         var tables = require('truth-tables');
         var $ = require('jquery');
+        var NetworkUtil = require('NetworkUtil');
+
+        function getNeuralNetwork(options) {
+            // TODO: add options
+            return new ANN(options);
+        }
+
+        function getTrainingSet() {
+            // TODO: Add types
+            return tables.AND();
+        }
+
 
         $(function() {
-            var andNJS = new ANN({
-                layerLength: 2,
-                hiddenLayerCount: 1
+
+            var t = getTrainingSet();
+            var network = getNeuralNetwork();
+
+            $('#submit').click(function() {
+                var a = $('#a').val();
+                var b = $('#b').val();
+
+                var out = network.test([a, b]);
+
+                $('#output').html(out.toString());
             });
-            console.log('Before Train');
-            console.log(andNJS.toString());
 
-            var t = tables.AND();
+            $('#train').click(function() {
+                NetworkUtil.train(network, t, Number($('#n').val()));
+                $('#output').html(network.toString());
+            });
 
-            for (var i = 0; i < t.length; i += 2) {
-                var input = t[i];
-                var expectedOutput = t[i + 1];
+            $('#converge').click(function() {
+                NetworkUtil.convergeNetwork(network, t);
+                var message = 'Converged!<br/>'
 
-                andNJS.train(input, expectedOutput);
-                console.log('Results: ' + input + ' :: ' + expectedOutput);
-                console.log(andNJS.toString());
-            }
+                if (!NetworkUtil.validate(network, t)) {
+                    message = 'Did not converge!<br/>';
+                }
+                $('#output').html(message + network.toString());
+            });
+
+            $('#reset').click(function() {
+                network = getNeuralNetwork();
+            });
+
+            $('#super-train').click(function() {
+                var n = Number($('#x').val());
+                var data = [];
+
+                for (var i = 0; i < n; i++) {
+                    NetworkUtil.convergeNetwork(network, t);
+                    data.push(network.getStats());
+
+                    network = getNeuralNetwork();
+                    t = getTrainingSet();
+                }
+
+                for (var i = 0; i < data.length; i++) {
+                    $('#output').append(data[i] + '<br/>');
+                }
+            });
         });
     </script>
 </head>
 <body>
-
+    Try Training: <br/>
+    a: <input type='text' id='a'> b: <input type='text' id='b'><br/>
+    <button id='submit'>See output</button>
+    <button id='train'>Train again</button><input type='text' id='n'>
+    <button id='converge'>Train till convergence</button><br/>
+    <button id='super-train'>Test Data Generation</button><input type='text' id='x'>
+    <div id='output'></div>
 </body>
 </html>
