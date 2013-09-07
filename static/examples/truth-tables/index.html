@@ -10,15 +10,17 @@
         var NetworkUtil = require('NetworkUtil');
 
         function getNeuralNetwork(options) {
-            // TODO: add options
-            return new ANN(options);
+            var settings = $.extend({
+                hiddenLayerCount: 2,
+                hiddenLayerNeuronCount: 5
+            }, options);
+            return new ANN(settings);
         }
 
         function getTrainingSet() {
             // TODO: Add types
             return tables.AND();
         }
-
 
         $(function() {
 
