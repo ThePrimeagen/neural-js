@@ -17,7 +17,8 @@
             var settings = $.extend({
                 inputLayerCount: Number($('#inputs').val()),
                 hiddenLayerCount: Number($('#hiddenLayerCount').val()),
-                hiddenLayerNeuronCount: Number($('#hiddenLayerLength').val())
+                hiddenLayerNeuronCount: Number($('#hiddenLayerLength').val()),
+                eta: Number($('#eta').val()),
             }, options);
             return new ANN(settings);
         }
@@ -104,6 +105,7 @@
             <option selected=selected value='XplusY'>x + y</option>
             <option value='XY'>x * y</option>
         </select>
+        Eta: <input type='text' id='eta' value='0.5'>
         <button id='new'>Create ANN</button>
     </div>
     <div id='button-panel'>
