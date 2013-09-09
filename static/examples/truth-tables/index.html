@@ -18,7 +18,9 @@
                 inputLayerCount: Number($('#inputs').val()),
                 hiddenLayerCount: Number($('#hiddenLayerCount').val()),
                 hiddenLayerNeuronCount: Number($('#hiddenLayerLength').val()),
-                eta: Number($('#eta').val()),
+                outputActivationFn: $('#output-act').val(),
+                hiddenActivationFn: $('#hidden-act').val(),
+                eta: Number($('#eta').val())
             }, options);
             return new ANN(settings);
         }
@@ -35,8 +37,38 @@
             for (var i = 0; i < inputs; i++) {
                 $inputDiv.append('<input type="text" id="input-' + i + '" value="' + i + '">');
             }
+
+            var ds = getAvailableDatasets();
+            var $dataSets = $('.data-sets');
+
+            for (var i = 0; i < ds.length; i++) {
+                $dataSets.append('<option value="' + ds[i] + '">' + ds[i] + '</option>');
+            }
+            var af = getActivationFunctions();
+            var $activationFn = $('.activation-fn');
+
+            for (var i = 0; i < ds.length; i += 2) {
+                $activationFn.append('<option value="' + af[i + 1] + '">' + af[i] + '</option>');
+            }
+
         }
 
+        function getAvailableDatasets() {
+            var ds = [];
+            for (var k in tables) {
+                ds.push(k);
+            }
+            return ds;
+        }
+
+        function getActivationFunctions() {
+            var af = [];
+            for (var k in NetworkUtil.Types) {
+                af.push(k);
+                af.push(NetworkUtil.Types[k]);
+            }
+            return af;
+        }
 
         $(function() {
             var $output = $('#output');
@@ -45,18 +77,17 @@
             /** @type NeuralNetwork */
             var network;
 
+            setUi();
             reset();
 
             $('#test').click(function() {
                 var results = NetworkUtil.five2Training(network, t);
-                $output.html(results);
-                $network.html(network.toString());
+                updateUi(results);
             });
 
             $('#train').click(function() {
                 NetworkUtil.train(network, t, Number($('#button-panel #n').val()));
-                $output.html(network.getOutput());
-                $network.html(network.toString());
+                updateUi();
             });
 
             $('#train-once').click(function() {
@@ -65,31 +96,42 @@
 
                     NetworkUtil.trainOnce(network, t);
                 }
-                $output.html(network.getOutput());
-                $network.html(network.toString());
+                updateUi();
             });
 
             $('#new').click(function() {
                 reset();
+                updateUi();
             });
 
             $('#manual-test').click(function() {
+                network.test(getInputs('.test-inputs'));
+                updateUi();
+            });
+
+            $('#manual-train').click(function() {
+                network.train(getInputs('.train-inputs'));
+                updateUi();
+            });
+
+            function getInputs(selector) {
                 var inputs = [];
                 var inputCount = Number($('#inputs').val());
 
                 for (var i = 0; i < inputCount; i++) {
-                    inputs.push(Number($('#input-' + i).val()));
+                    inputs.push(Number($(selector + ' #input-' + i).val()));
                 }
 
-                network.test(inputs);
-                $output.html(network.getOutput());
+                return inputs;
+            }
+            function updateUi(output) {
+                output = output || network.getOutput();
+                $output.html(output);
                 $network.html(network.toString());
-            });
-
+            }
             function reset() {
                 t = getTrainingSet();
                 network = getNeuralNetwork();
-                setUi();
             }
         });
     </script>
@@ -100,18 +142,20 @@
         Inputs: <input type='text' id='inputs' value='2'>
         HiddenLayerLength: <input type='text' id='hiddenLayerLength' value='2'>
         HiddenLayerCount: <input type='text' id='hiddenLayerCount' value='0'>
-        DataSet:
-        <select id='data-set'>
-            <option selected=selected value='XplusY'>x + y</option>
-            <option value='XY'>x * y</option>
-        </select>
+        DataSet: <select class='data-sets' id='data-set'></select>
+        Output Activation Fn: <select class='activation-fn' id='output-act'></select>
+        Hidden Activation Fn: <select class='activation-fn' id='hidden-act'></select>
         Eta: <input type='text' id='eta' value='0.5'>
         <button id='new'>Create ANN</button>
     </div>
     <div id='button-panel'>
         Test with input:
-        <div class='inputs'>
-        </div> <button id='manual-test'>Manual Test</button><br/>
+        <div class='inputs test-inputs'>
+        </div>
+        <button id='manual-test'>Manual Test</button><br/>
+        <div class='inputs train-inputs'>
+        </div>
+        <button id='manual-train'>Manual Train</button><br/>
         <button id='train'>Train</button><input type='text' id='n'><br/>
         <button id='train-once'>Train Once</button><input type='text' id='x'><br/>
         <button id='test'>Test</button>
