@@ -110,7 +110,8 @@
             });
 
             $('#manual-train').click(function() {
-                network.train(getInputs('.train-inputs'));
+                var output = $('#manual-test-exp-out').val();
+                network.train(getInputs('.train-inputs'), [output]);
                 updateUi();
             });
 
@@ -149,11 +150,14 @@
         <button id='new'>Create ANN</button>
     </div>
     <div id='button-panel'>
-        Test with input:
-        <div class='inputs test-inputs'>
+        Test with input:<br/>
+        Inputs: <div class='inputs test-inputs'>
         </div>
         <button id='manual-test'>Manual Test</button><br/>
-        <div class='inputs train-inputs'>
+        Inputs: <div class='inputs train-inputs'>
+        </div>
+        Output: <div class='outputs train-inputs'>
+            <input type='text' id='manual-test-exp-out'>
         </div>
         <button id='manual-train'>Manual Train</button><br/>
         <button id='train'>Train</button><input type='text' id='n'><br/>
