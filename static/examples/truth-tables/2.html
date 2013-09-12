@@ -4,7 +4,7 @@
     <title>Truth Tables | CI - Neural Networks</title>
     <script type="text/javascript" src="/src/bundle.js"></script>
     <script type="text/javascript">
-        var ANN = require('NeuralNetwork');
+        var ANN = require('NeuralNetwork2');
         var tables = require('truth-tables');
         var $ = require('jquery');
         var NetworkUtil = require('NetworkUtil');
@@ -133,39 +133,38 @@
             function reset() {
                 t = getTrainingSet();
                 network = getNeuralNetwork();
-                window.network = network;
             }
         });
     </script>
 </head>
 <body>
-    Try Training: <br/>
-    <div id='controls'>
-        Inputs: <input type='text' id='inputs' value='2'>
-        HiddenLayerLength: <input type='text' id='hiddenLayerLength' value='2'>
-        HiddenLayerCount: <input type='text' id='hiddenLayerCount' value='0'>
-        DataSet: <select class='data-sets' id='data-set'></select>
-        Output Activation Fn: <select class='activation-fn' id='output-act'></select>
-        Hidden Activation Fn: <select class='activation-fn' id='hidden-act'></select>
-        Eta: <input type='text' id='eta' value='0.5'>
-        <button id='new'>Create ANN</button>
-    </div>
-    <div id='button-panel'>
-        Test with input:<br/>
-        Inputs: <div class='inputs test-inputs'>
-        </div>
-        <button id='manual-test'>Manual Test</button><br/>
-        Inputs: <div class='inputs train-inputs'>
-        </div>
-        Output: <div class='outputs train-inputs'>
-            <input type='text' id='manual-test-exp-out'>
-        </div>
-        <button id='manual-train'>Manual Train</button><br/>
-        <button id='train'>Train</button><input type='text' id='n'><br/>
-        <button id='train-once'>Train Once</button><input type='text' id='x'><br/>
-        <button id='test'>Test</button>
-    </div>
-    <div id='output'></div>
-    <div id='network'></div>
+Try Training: <br/>
+<div id='controls'>
+    Inputs: <input type='text' id='inputs' value='2'>
+    HiddenLayerLength: <input type='text' id='hiddenLayerLength' value='2'>
+    HiddenLayerCount: <input type='text' id='hiddenLayerCount' value='0'>
+    DataSet: <select class='data-sets' id='data-set'></select>
+    Output Activation Fn: <select class='activation-fn' id='output-act'></select>
+    Hidden Activation Fn: <select class='activation-fn' id='hidden-act'></select>
+    Eta: <input type='text' id='eta' value='0.5'>
+    <button id='new'>Create ANN</button>
+</div>
+<div id='button-panel'>
+    Test with input:<br/>
+    Inputs: <div class='inputs test-inputs'>
+</div>
+    <button id='manual-test'>Manual Test</button><br/>
+    Inputs: <div class='inputs train-inputs'>
+</div>
+    Output: <div class='outputs train-inputs'>
+    <input type='text' id='manual-test-exp-out'>
+</div>
+    <button id='manual-train'>Manual Train</button><br/>
+    <button id='train'>Train</button><input type='text' id='n'><br/>
+    <button id='train-once'>Train Once</button><input type='text' id='x'><br/>
+    <button id='test'>Test</button>
+</div>
+<div id='output'></div>
+<div id='network'></div>
 </body>
 </html>
