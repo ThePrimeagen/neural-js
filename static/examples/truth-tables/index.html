@@ -8,7 +8,7 @@
         var tables = require('truth-tables');
         var $ = require('jquery');
         var D3Visualizer = require('D3Visualizer');
-        var NetworkUtil = require('NetworkUtil');
+        var NetworkUtil = require('NetworkMath');
         var NetworkStates = require('NetworkStates');
 
         /**
@@ -76,6 +76,7 @@
             var $output = $('#output');
             var t;
             var viz = new D3Visualizer('#network');
+
             /** @type NeuralNetwork */
             var network;
 
