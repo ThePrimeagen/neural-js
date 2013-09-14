@@ -7,7 +7,9 @@
         var ANN = require('NeuralNetwork');
         var tables = require('truth-tables');
         var $ = require('jquery');
+        var D3Visualizer = require('D3Visualizer');
         var NetworkUtil = require('NetworkUtil');
+        var NetworkStates = require('NetworkStates');
 
         /**
          * @param options
@@ -72,13 +74,14 @@
 
         $(function() {
             var $output = $('#output');
-            var $network = $('#network');
             var t;
+            var viz = new D3Visualizer('#network');
             /** @type NeuralNetwork */
             var network;
 
             setUi();
             reset();
+            updateUi();
 
             $('#test').click(function() {
                 var results = NetworkUtil.five2Training(network, t);
@@ -115,6 +118,26 @@
                 updateUi();
             });
 
+            var stepTrainFn;
+            $('#step-train').click(function() {
+                if (network.state === NetworkStates.Finished) {
+                    var i = Math.floor(Math.random() * t.length);
+                    if (i % 2 !== 0) {
+                        i--;
+                    }
+                    stepTrainFn = network.stepTrain(t[i], t[i + 1]);
+                } else {
+                    stepTrainFn();
+                }
+
+                updateUi();
+            });
+
+            $('#clear-error').click(function() {
+                network.clearError();
+                updateUi();
+            });
+
             function getInputs(selector) {
                 var inputs = [];
                 var inputCount = Number($('#inputs').val());
@@ -128,7 +151,7 @@
             function updateUi(output) {
                 output = output || network.getOutput();
                 $output.html(output);
-                $network.html(network.toString());
+                viz.update(network.serialize());
             }
             function reset() {
                 t = getTrainingSet();
@@ -143,7 +166,7 @@
     <div id='controls'>
         Inputs: <input type='text' id='inputs' value='2'>
         HiddenLayerLength: <input type='text' id='hiddenLayerLength' value='2'>
-        HiddenLayerCount: <input type='text' id='hiddenLayerCount' value='0'>
+        HiddenLayerCount: <input type='text' id='hiddenLayerCount' value='3'>
         DataSet: <select class='data-sets' id='data-set'></select>
         Output Activation Fn: <select class='activation-fn' id='output-act'></select>
         Hidden Activation Fn: <select class='activation-fn' id='hidden-act'></select>
@@ -166,6 +189,8 @@
         <button id='test'>Test</button>
     </div>
     <div id='output'></div>
+    <button id='step-train'>Start Train</button>
+    <button id='clear-error'>Clear Error</button>
     <div id='network'></div>
 </body>
 </html>

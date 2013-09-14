@@ -51,6 +51,8 @@ function browserifyExternals(b, externals) {
     b.require('./lib/neural-networks/NeuralNetwork', {expose: 'NeuralNetwork'});
     b.require('./lib/neural-networks/NeuralNetwork2', {expose: 'NeuralNetwork2'});
     b.require('./lib/neural-networks/lib/NetworkUtil', {expose: 'NetworkUtil'});
+    b.require('./lib/neural-networks/lib/NetworkStates', {expose: 'NetworkStates'});
     b.require('./lib/util/ExperimentalDatasets', {expose: 'ExperimentalDatasets'});
+    b.require('./lib/visualization/html/D3Visualizer', {expose: 'D3Visualizer'});
     b.require('./lib/truth-tables', {expose: 'truth-tables'});
 }

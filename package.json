@@ -15,6 +15,7 @@
         "mkpath": "*",
         "lodash": "*",
         "rxjs-fs": "*",
-        "lodash": "*"
+        "lodash": "*",
+        "d3": "*"
     }
 }
