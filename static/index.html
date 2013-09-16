@@ -1,9 +1,198 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title></title>
+    <title>Truth Tables | CI - Neural Networks</title>
+    <script type="text/javascript" src="/src/bundle.js"></script>
+    <script type="text/javascript">
+        var ANN = require('NeuralNetwork');
+        var tables = require('truth-tables');
+        var $ = require('jquery');
+        var D3Visualizer = require('D3Visualizer');
+        var NetworkMath = require('NetworkMath');
+        var NetworkStates = require('NetworkStates');
+        var NetworkExperiments = require('NetworkExperiments');
+
+        /**
+         * @param options
+         * @returns {NeuralNetwork}
+         */
+        function getNeuralNetwork(options) {
+            var settings = $.extend({
+                inputLayerCount: Number($('#inputs').val()),
+                hiddenLayerCount: Number($('#hiddenLayerCount').val()),
+                hiddenLayerNeuronCount: Number($('#hiddenLayerLength').val()),
+                outputActivationFn: $('#output-act').val(),
+                hiddenActivationFn: $('#hidden-act').val(),
+                eta: Number($('#eta').val())
+            }, options);
+            return new ANN(settings);
+        }
+
+        function getTrainingSet() {
+            return tables[$('#data-set').val()]();
+        }
+
+        function setUi() {
+            var inputs = Number($('#inputs').val());
+            var $inputDiv = $('.inputs');
+            $inputDiv.empty();
+
+            for (var i = 0; i < inputs; i++) {
+                $inputDiv.append('<input type="text" id="input-' + i + '" value="' + i + '">');
+            }
+
+            var ds = getAvailableDatasets();
+            var $dataSets = $('.data-sets');
+
+            for (var i = 0; i < ds.length; i++) {
+                $dataSets.append('<option value="' + ds[i] + '">' + ds[i] + '</option>');
+            }
+            var af = getActivationFunctions();
+            var $activationFn = $('.activation-fn');
+
+            for (var i = 0; i < ds.length; i += 2) {
+                $activationFn.append('<option value="' + af[i + 1] + '">' + af[i] + '</option>');
+            }
+
+        }
+
+        function getAvailableDatasets() {
+            var ds = [];
+            for (var k in tables) {
+                ds.push(k);
+            }
+            return ds;
+        }
+
+        function getActivationFunctions() {
+            var af = [];
+            for (var k in NetworkMath.Types) {
+                af.push(k);
+                af.push(NetworkMath.Types[k]);
+            }
+            return af;
+        }
+
+        $(function() {
+            var $output = $('#output');
+            var t;
+            var viz = new D3Visualizer('#network');
+
+            /** @type NeuralNetwork */
+            var network;
+
+            setUi();
+            reset();
+            updateUi();
+
+            $('#test').click(function() {
+                var results = NetworkMath.five2Training(network, t);
+                updateUi(results);
+            });
+
+            $('#train').click(function() {
+                NetworkMath.train(network, t, Number($('#button-panel #n').val()));
+                updateUi();
+            });
+
+            $('#train-once').click(function() {
+                var n = Number($('#button-panel #x').val());
+                for (var i = 0; i < n; i++) {
+
+                    NetworkExperiments.trainOnce(network, t);
+                }
+                updateUi();
+            });
+
+            $('#new').click(function() {
+                reset();
+                updateUi();
+            });
+
+            $('#manual-test').click(function() {
+                network.test(getInputs('.test-inputs'));
+                updateUi();
+            });
+
+            $('#manual-train').click(function() {
+                var output = $('#manual-test-exp-out').val();
+                network.train(getInputs('.train-inputs'), [output]);
+                updateUi();
+            });
+
+            var stepTrainFn;
+            $('#step-train').click(function() {
+                if (network.state === NetworkStates.Finished) {
+                    var i = Math.floor(Math.random() * t.length);
+                    if (i % 2 !== 0) {
+                        i--;
+                    }
+                    stepTrainFn = network.stepTrain(t[i], t[i + 1]);
+                } else {
+                    stepTrainFn();
+                }
+
+                updateUi();
+            });
+
+            $('#clear-error').click(function() {
+                network.clearError();
+                updateUi();
+            });
+
+            function getInputs(selector) {
+                var inputs = [];
+                var inputCount = Number($('#inputs').val());
+
+                for (var i = 0; i < inputCount; i++) {
+                    inputs.push(Number($(selector + ' #input-' + i).val()));
+                }
+
+                return inputs;
+            }
+            function updateUi(output) {
+                output = output || network.getOutput();
+                $output.html(output);
+                viz.update(network.serialize());
+            }
+            function reset() {
+                t = getTrainingSet();
+                network = getNeuralNetwork();
+                window.network = network;
+            }
+        });
+    </script>
 </head>
 <body>
-
+    Try Training: <br/>
+    <div id='controls'>
+        Inputs: <input type='text' id='inputs' value='2'>
+        HiddenLayerLength: <input type='text' id='hiddenLayerLength' value='2'>
+        HiddenLayerCount: <input type='text' id='hiddenLayerCount' value='3'>
+        DataSet: <select class='data-sets' id='data-set'></select>
+        Output Activation Fn: <select class='activation-fn' id='output-act'></select>
+        Hidden Activation Fn: <select class='activation-fn' id='hidden-act'></select>
+        Eta: <input type='text' id='eta' value='0.5'>
+        <button id='new'>Create ANN</button>
+    </div>
+    <div id='button-panel'>
+        Test with input:<br/>
+        Inputs: <div class='inputs test-inputs'>
+        </div>
+        <button id='manual-test'>Manual Test</button><br/>
+        Inputs: <div class='inputs train-inputs'>
+        </div>
+        Output: <div class='outputs train-inputs'>
+            <input type='text' id='manual-test-exp-out'>
+        </div>
+        <button id='manual-train'>Manual Train</button><br/>
+        <button id='train'>Train</button><input type='text' id='n'><br/>
+        <button id='train-once'>Train Once</button><input type='text' id='x'><br/>
+        <button id='test'>Test</button>
+    </div>
+    <div id='output'></div>
+    <button id='step-train'>Start Train</button>
+    <button id='clear-error'>Clear Error</button>
+    <div id='network'></div>
 </body>
 </html>
