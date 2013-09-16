@@ -136,6 +136,7 @@
         function dataConfigToCSV(config) {
             return [config.range, config.density, config.alpha].join(',');
         }
+
         $(function() {
             $(".generate-data").click(generateTestData);
             $(".generate-data-big").click(generateBigTestData);
@@ -163,7 +164,7 @@
                     NetworkMath.alpha = data.alpha;
 
                     var answers = NetworkExperiments.five2Training(network, t);
-                    storeData(answers[0] + ',' + answers[1] + ',' + answers[2] + ',' + configToCSV(config) + ',' + dataConfigToCSV(data) );
+                    storeData(answers[0] + ',' + answers[1] + ',' + answers[2] + ',' + configToCSV(config) + ',' + dataConfigToCSV(data), filename);
 
                     configIdx++;
                     for (var i = 0; i < output.length; i++) {
@@ -174,8 +175,31 @@
                     }
                 }
 
-                function storeData(str) {
-                    $.get('/data/store/' + filename + '/' + str, {}, function(response) {});
+
+            });
+
+            function storeData(str, filename) {
+                $.get('/data/store/' + filename + '/' + str, {}, function(response) {});
+            }
+
+            $('#large-test').click(function() {
+                setup();
+                $('#test-status').html('Running Tests');
+                $('#output').html('');
+                var filename = $('#filename').val();
+                var config = configs[0];
+                var data = dataConfigs[0];
+                NetworkMath.alpha = data.alpha;
+
+                for (var i = 2; i <= 6; i++) {
+                    $('#test-status').html('Running Tests: ' + (i - 4) / 5);
+
+                    t = tables['Rosenbrock' + i](data.range, data.density);
+                    config.inputLayerCount = i;
+                    network = new ANN(config);
+
+                    var answers = NetworkExperiments.five2Training(network, t);
+                    storeData(answers[0] + ',' + answers[1] + ',' + answers[2] + ',' + configToCSV(config) + ',' + dataConfigToCSV(data), filename);
                 }
             });
         });
@@ -213,6 +237,7 @@
 ]</textarea>
     </div>
     <button id='run-test'>Run Test</button>
+    <button id='large-test'>Run Large Test</button><br/>
     <button id='2' class='generate-data'>Generate Test Data 2</button>
     <button id='2' class='generate-data-big'>Generate Big Test Data 2</button>
     <button id='3' class='generate-data'>Generate Test Data 3</button>
