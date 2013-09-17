@@ -12,7 +12,7 @@ module.exports = {
 
         var srcPath = './lib';
         var externals = './external/';
-        var out = './static/src';
+        var out = './static/src/dist';
         var debug = true;
         var b = browserify()
             .add(externals + 'index.js');
@@ -49,6 +49,7 @@ function browserifyExternals(b, externals) {
     b.require(externals + 'Observable.js', {expose: 'Observable'});
     b.require('lodash', {expose: 'lodash'});
     b.require('./lib/neural-networks/NeuralNetwork', {expose: 'NeuralNetwork'});
+    b.require('./lib/neural-networks/RBFNetwork', {expose: 'RBFNetwork'});
     b.require('./lib/neural-networks/lib/NetworkMath', {expose: 'NetworkMath'});
     b.require('./lib/neural-networks/lib/NetworkStates', {expose: 'NetworkStates'});
     b.require('./lib/util/NetworkExperiments', {expose: 'NetworkExperiments'});

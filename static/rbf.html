@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Truth Tables | CI - Neural Networks</title>
+<link rel='stylesheet' href='/src/bootstrap/css/bootstrap.min.css'>
+<link rel='stylesheet' href='/src/bootstrap/css/bootstrap-theme.min.css'>
+<script type="text/javascript" src="/src/dist/bundle.js"></script>
+<script type="text/javascript">
+    var RBF = require('RBFNetwork');
+    var tables = require('truth-tables');
+    var $ = require('jquery');
+    var _ = require('lodash');
+    var NetworkMath = require('NetworkMath');
+    var NetworkExperiments = require('NetworkExperiments');
+    var network, t;
+    var configs;
+    var dataConfigs;
+
+    function setup() {
+        dataConfigs = JSON.parse($('.rosenbrock .settings').val());
+        configs = JSON.parse($('.ann .ann-settings').val());
+    }
+
+    function generateBigTestData() {
+        var inputs = Number($(this).attr('id'));
+        var annConfig = {
+            hiddenLayerCount: 0,
+            hiddenLayerNeuronCount: 5,
+            outputCount: 1,
+            inputLayerCount: 2,
+            eta: 0.5,
+            alpha: 0.25,
+            momentum: false,
+            runOutputWeightChangeFirst: false
+
+        };
+
+        var dataConfig = {
+            range: 0,
+            density: 5,
+            dimension: 1,
+            alpha: 2
+        };
+
+        var genConfigs = [];
+        var genDatas = []
+        var alpha = 0.1;
+        var density = 20000;
+
+        for (var m = 0; m < 2; m++) {
+            for (var la = 1; la > 0; la -= 0.49) {
+                var dC = _.clone(dataConfig);
+                var aC = _.clone(annConfig);
+
+                aC.inputLayerCount = inputs;
+                aC.hiddenLayerCount = 2;
+                aC.hiddenLayerNeuronCount = 50;
+                aC.eta = 0.01;
+                aC.momentum = m % 2 === 0;
+                aC.alpha = alpha;
+
+                dC.range = 0.5;
+                dC.density = density;
+                dC.alpha = la;
+                dC.dimension = inputs;
+
+                genConfigs.push(aC);
+                genDatas.push(dC);
+            }
+        }
+
+        $('.rosenbrock .settings').val(JSON.stringify(genDatas));
+        $('.ann .ann-settings').val(JSON.stringify(genConfigs));
+    }
+
+    function generateTestData() {
+        var inputs = Number($(this).attr('id'));
+
+        var annConfig = {
+            hiddenLayerCount: 0,
+            hiddenLayerNeuronCount: 5,
+            outputCount: 1,
+            inputLayerCount: 2,
+            eta: 0.5,
+            alpha: 0.25,
+            momentum: false,
+            runOutputWeightChangeFirst: false
+
+        };
+
+        var dataConfig = {
+            range: 0,
+            density: 5,
+            dimension: 1,
+            alpha: 2
+        };
+
+        var genConfigs = [];
+        var genDatas = [];
+        var alpha = 0.1;
+        var hlnc = 10;
+        var density = 20000;
+
+        for (var hlc = 0; hlc <= 2; hlc++) {
+            for (var m = 0; m < 2; m++) {
+                for (var la = 1; la > 0; la -= 0.49) {
+                    var dC = _.clone(dataConfig);
+                    var aC = _.clone(annConfig);
+
+                    aC.inputLayerCount = inputs;
+                    aC.hiddenLayerCount = hlc;
+                    aC.hiddenLayerNeuronCount = hlc !== 0 ? 10 : 0;
+                    aC.eta = 0.01;
+                    aC.momentum = m % 2 === 0;
+                    aC.alpha = alpha;
+
+                    dC.range = 0.5;
+                    dC.density = density;
+                    dC.alpha = la;
+                    dC.dimension = inputs;
+
+                    genConfigs.push(aC);
+                    genDatas.push(dC);
+                }
+            }
+        }
+
+        $('.rosenbrock .settings').val(JSON.stringify(genDatas));
+        $('.ann .ann-settings').val(JSON.stringify(genConfigs));
+    }
+
+    function configToCSV(config) {
+        return [config.inputLayerCount, config.hiddenLayerCount, config.hiddenLayerNeuronCount, config.eta, config.momentum, config.alpha].join(',');
+    }
+
+    function dataConfigToCSV(config) {
+        return [config.range, config.density, config.alpha].join(',');
+    }
+
+    $(function() {
+        $(".generate-data").click(generateTestData);
+        $(".generate-data-big").click(generateBigTestData);
+
+        $('#run-test').click(function() {
+            setup();
+
+            $('#test-status').html('Running Tests');
+            $('#output').html('');
+
+            var output = [];
+            var configIdx = 0;
+            var filename = $('#filename').val();
+            runTest();
+
+            function runTest() {
+                var config = configs[configIdx];
+                var data = dataConfigs[configIdx];
+                var t = tables.X();
+
+                network = RBF.create(t, config);
+                for (var i = 0; i < t.length; i += 2) {
+                    console.log(network.test(t[i]));
+                }
+            }
+
+
+        });
+
+        function storeData(str, filename) {
+            $.get('/data/store/' + filename + '/' + str, {}, function(response) {});
+        }
+    });
+</script>
+</head>
+<body>
+<div class='well rosenbrock'>
+    Rosenbrock Settings<br/>
+    <div class='row'>
+        <textarea class='settings'style='width: 400px;height: 225px'>
+[
+    {
+        "range": 0,
+        "density": 5,
+        "dimension": 1,
+        "alpha": 2
+    }
+]</textarea>
+    </div>
+</div>
+<div class='well ann'>
+    ANN Settings<br/>
+    <textarea class='ann-settings'style='width: 400px;height: 225px'>
+[
+    {
+        "hiddenLayerCount": 1,
+        "hiddenLayerNeuronCount": 5,
+        "outputCount": 1,
+        "inputLayerCount": 1
+    }
+]</textarea>
+</div>
+<button id='run-test'>Run Test</button>
+<button id='2' class='generate-data'>Generate Test Data 2</button>
+<button id='2' class='generate-data-big'>Generate Big Test Data 2</button>
+<button id='3' class='generate-data'>Generate Test Data 3</button>
+<button id='3' class='generate-data-big'>Generate Big Test Data 3</button>
+<button id='4' class='generate-data'>Generate Test Data 4</button>
+<button id='4' class='generate-data-big'>Generate Big Test Data 4</button>
+<button id='5' class='generate-data'>Generate Test Data 5</button>
+<button id='5' class='generate-data-big'>Generate Big Test Data 5</button>
+<button id='6' class='generate-data'>Generate Test Data 6</button>
+<button id='6' class='generate-data-big'>Generate Big Test Data 6</button>
+<input type='text' id='filename'>
+<div id='test-status'></div>
+<div id='output'></div>
+<div id='network'></div>
+</body>
+</html>
