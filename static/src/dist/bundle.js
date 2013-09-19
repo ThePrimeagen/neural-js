@@ -14757,21 +14757,39 @@ NeuralNetwork.prototype = {
             switch (this.state) {
                 case NetworkStates.SetInputs:
                     this._setInputs(this.inputs);
+                    this.state = NetworkStates.FeedForward;
                     break;
                 case NetworkStates.FeedForward:
                     this._feedForward();
+                    this.state = NetworkStates.BackPropOutput;
                     break;
                 case NetworkStates.BackPropOutput:
                     this._backpropErrorOutput(this.expectedOutputs);
+                    if (this.runOutputWeightChangeFirst) {
+                        this.state = NetworkStates.WeightCalcOutput;
+                    } else {
+                        this.state = NetworkStates.BackPropHidden;
+                    }
                     break;
                 case NetworkStates.BackPropHidden:
                     this._backpropErrorHidden();
+                    if (this.runOutputWeightChangeFirst) {
+                        this.state = NetworkStates.WeightCalcHidden;
+                    } else {
+                        this.state = NetworkStates.WeightCalcOutput;
+                    }
                     break;
                 case NetworkStates.WeightCalcOutput:
                     this._adjustOutputWeights();
+                    if (this.runOutputWeightChangeFirst) {
+                        this.state = NetworkStates.BackPropHidden;
+                    } else {
+                        this.state = NetworkStates.WeightCalcHidden;
+                    }
                     break;
                 case NetworkStates.WeightCalcHidden:
                     this._adjustHiddenWeights();
+                    this.state = NetworkStates.Finished;
                     break;
             }
         } while (runUntilFinished && this.state !== NetworkStates.Finished);
@@ -14892,7 +14910,6 @@ NeuralNetwork.prototype = {
             this._inputs[this._inputs.length - 1].output = 1;
             this._inputs[this._inputs.length - 1].input = 1;
         }
-        this.state = NetworkStates.FeedForward;
     },
 
     /**
@@ -14934,8 +14951,6 @@ NeuralNetwork.prototype = {
             o.input = sum;
             o.output = o.activationFn(sum);
         }
-
-        this.state = NetworkStates.BackPropOutput;
     },
 
     /**
@@ -14954,11 +14969,6 @@ NeuralNetwork.prototype = {
             this._mse = o.error;
         }
 
-        if (this.runOutputWeightChangeFirst) {
-            this.state = NetworkStates.WeightCalcOutput;
-        } else {
-            this.state = NetworkStates.BackPropHidden;
-        }
     },
 
     /**
@@ -14995,11 +15005,6 @@ NeuralNetwork.prototype = {
             }
         }
 
-        if (this.runOutputWeightChangeFirst) {
-            this.state = NetworkStates.WeightCalcHidden;
-        } else {
-            this.state = NetworkStates.WeightCalcOutput;
-        }
     },
 
     /**
@@ -15032,12 +15037,6 @@ NeuralNetwork.prototype = {
 
                 o.w[pN] += o.deltaW[pN];
             }
-        }
-
-        if (this.runOutputWeightChangeFirst) {
-            this.state = NetworkStates.BackPropHidden;
-        } else {
-            this.state = NetworkStates.WeightCalcHidden;
         }
     },
 
@@ -15076,8 +15075,6 @@ NeuralNetwork.prototype = {
             }
         }
 
-        // Finishes the single training session after adjustment of hidden weights
-        this.state = NetworkStates.Finished;
     },
 
     /**
@@ -15123,6 +15120,7 @@ module.exports = NeuralNetwork;
 var ANN = require('NeuralNetwork');
 var _ = require('lodash');
 var NetworkMath = require('NetworkMath');
+var NetworkStates = require('NetworkStates');
 
 
 var RBFNetwork = function(configuration) {
@@ -15135,6 +15133,18 @@ var RBFNetwork = function(configuration) {
      */
     this.initialSigma = 1;
 
+    /**
+     * Calculates the sigma
+     * @type {boolean}
+     */
+    this.calculateSigma = false;
+
+    /**
+     * The calculated sigma constant
+     * @type {number}
+     */
+    this.rho = 0.5;
+
     if (configuration.initialCenters.length !== configuration.hiddenLayerNeuronCount) {
         throw new Error('Bad data: Hidden layer neuron count must equal initial centers');
     }
@@ -15144,6 +15154,27 @@ var RBFNetwork = function(configuration) {
 };
 
 RBFNetwork.prototype = _.assign(ANN.prototype, {
+
+    getAverageDistance: function() {
+        var dist = 0;
+        var hidden = this._layers[1];
+        for (var i = 0; i < hidden.length - 1; i++) {
+            var h = hidden[i];
+            var n = hidden[i + 1];
+            dist += NetworkMath.lpNorm(h.center, n.center);
+        }
+
+        return dist / this._layers[1].length;
+    },
+
+    /**
+     * The sigma calculation
+     * @returns {number}
+     */
+    getCalculatedSigma: function() {
+        return this.getAverageDistance() * this.rho;
+    },
+
     /**
      * the rbf initialization.  This spreads the range through
      * @private
@@ -15153,9 +15184,15 @@ RBFNetwork.prototype = _.assign(ANN.prototype, {
         var hidden = this._layers[1];
         for (var i = 0; i < hidden.length; i++) {
             hidden[i].center = this.initialCenters[i];
-            hidden[i].sigma = this.initialSigma;
+        }
+
+        var sigma = this.getCalculatedSigma();
+        for (var i = 0; i < hidden.length; i++) {
+            hidden[i].sigma = sigma;
         }
     },
+
+    name: 'RBF',
 
     /**
      * The feed forward algorithm is different within
@@ -15169,8 +15206,6 @@ RBFNetwork.prototype = _.assign(ANN.prototype, {
             var h = hidden[i];
             var norm = NetworkMath.lpNorm(h.center, inputs);
             h.output = NetworkMath.gaussian(norm, h.sigma);
-
-            console.log([norm, h.output]);
         }
 
         var outputs = this._layers[2];
@@ -15184,6 +15219,19 @@ RBFNetwork.prototype = _.assign(ANN.prototype, {
 
             o.output = sum;
         }
+        this.state = NetworkStates
+    },
+
+    /**
+     * The hidden layer does not need error calculation
+     * @private
+     */
+    _backpropErrorHidden: function() {
+        // Note:  There are no hidden calculations
+    },
+
+    _adjustHiddenWeights: function() {
+        // Note: The center / sigma are the hidden weights
     },
 
     /**
@@ -15210,8 +15258,8 @@ RBFNetwork.prototype = _.assign(ANN.prototype, {
 RBFNetwork.create = function(t, configuration) {
     // t is in pairs.  input, output
     var centerCount = configuration.hiddenLayerNeuronCount;
-    var step = t.length / centerCount;
-    var halfStep = step / 2;
+    var step = Math.floor(t.length / centerCount);
+    var halfStep = Math.floor(step / 2);
     var centers = [];
 
     for (var i = 0; i < centerCount; i++) {
@@ -15229,7 +15277,7 @@ RBFNetwork.create = function(t, configuration) {
 };
 
 module.exports = RBFNetwork;
-},{"NetworkMath":"KZyFN2","NeuralNetwork":"T1/mF8","lodash":"RXtuav"}],"KZyFN2":[function(require,module,exports){
+},{"NetworkMath":"KZyFN2","NetworkStates":"SNwojz","NeuralNetwork":"T1/mF8","lodash":"RXtuav"}],"KZyFN2":[function(require,module,exports){
 var _ = require('lodash');
 
 /**
@@ -15285,7 +15333,7 @@ function dLogisticFunction(x) {
  */
 function gaussianFn(x, s) {
     s = s || NetworkMath.sigma;
-    return Math.pow(Math.E, -(x * x / 2 * s * s));
+    return Math.pow(Math.E, -(x * x / (2 * s * s)));
 }
 
 /**
@@ -15465,9 +15513,9 @@ module.exports = function(id) {
 module.exports = {
     X: function() {
         var data = [];
-        for (var x = 0; x < 10; x++) {
-            data.push([x]);
-            data.push([x]);
+        for (var x = 0; x < 1000; x++) {
+            data.push([x / 100]);
+            data.push([x / 100]);
         }
 
         return data;
@@ -15911,11 +15959,15 @@ var NetworkExperiments = {
             var datasets = splitData(t);
 
             network.reset();
-            trainData(network, datasets[0]);
+            for (var j = 0; j < 20; j++) {
+                trainData(network, datasets[0]);
+            }
             var stats1 = getStats(testData(network, datasets[1]));
 
             network.reset();
-            trainData(network, datasets[1]);
+            for (var j = 0; j < 20; j++) {
+                trainData(network, datasets[1]);
+            }
             var stats2 = getStats(testData(network, datasets[0]));
 
             accuracy += stats1[0] + stats2[0];
@@ -15937,7 +15989,16 @@ var NetworkExperiments = {
     /**
      * @type NetworkTrainer
      */
-    train: train
+    train: train,
+
+    /**
+     * The manula training
+     * @param input
+     * @param output
+     */
+    manualTrain: function(network, input, output) {
+        network.train(input, output);
+    }
 };
 
 module.exports = NetworkExperiments;
@@ -25130,8 +25191,8 @@ d3 = function() {
 }();
 },{}],"NeuralNetwork":[function(require,module,exports){
 module.exports=require('T1/mF8');
-},{}],"rx":[function(require,module,exports){
-module.exports=require('pVFtis');
+},{}],"jquery":[function(require,module,exports){
+module.exports=require('0/WfN8');
 },{}],"truth-tables":[function(require,module,exports){
 module.exports=require('NIfbEe');
 },{}],"NetworkExperiments":[function(require,module,exports){
@@ -25143,8 +25204,8 @@ require("./d3");
 module.exports = d3;
 (function () { delete this.d3; })(); // unset global
 
-},{"./d3":14}],"jquery":[function(require,module,exports){
-module.exports=require('0/WfN8');
+},{"./d3":14}],"rx":[function(require,module,exports){
+module.exports=require('pVFtis');
 },{}],"D3Visualizer":[function(require,module,exports){
 module.exports=require('sXMxnC');
 },{}],"Observable":[function(require,module,exports){

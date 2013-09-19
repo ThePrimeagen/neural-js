@@ -7,6 +7,7 @@
     <script type="text/javascript" src="/src/dist/bundle.js"></script>
     <script type="text/javascript">
         var ANN = require('NeuralNetwork');
+        var RBF = require('RBFNetwork');
         var tables = require('truth-tables');
         var $ = require('jquery');
         var _ = require('lodash');
@@ -45,71 +46,16 @@
             var genConfigs = [];
             var genDatas = []
             var alpha = 0.1;
-            var density = 20000;
-
-            for (var m = 0; m < 2; m++) {
-                for (var la = 1; la > 0; la -= 0.49) {
-                    var dC = _.clone(dataConfig);
-                    var aC = _.clone(annConfig);
-
-                    aC.inputLayerCount = inputs;
-                    aC.hiddenLayerCount = 2;
-                    aC.hiddenLayerNeuronCount = 50;
-                    aC.eta = 0.01;
-                    aC.momentum = m % 2 === 0;
-                    aC.alpha = alpha;
-
-                    dC.range = 0.5;
-                    dC.density = density;
-                    dC.alpha = la;
-                    dC.dimension = inputs;
-
-                    genConfigs.push(aC);
-                    genDatas.push(dC);
-                }
-            }
-
-            $('.rosenbrock .settings').val(JSON.stringify(genDatas));
-            $('.ann .ann-settings').val(JSON.stringify(genConfigs));
-        }
-
-        function generateTestData() {
-            var inputs = Number($(this).attr('id'));
-
-            var annConfig = {
-                hiddenLayerCount: 0,
-                hiddenLayerNeuronCount: 5,
-                outputCount: 1,
-                inputLayerCount: 2,
-                eta: 0.5,
-                alpha: 0.25,
-                momentum: false,
-                runOutputWeightChangeFirst: false
-
-            };
-
-            var dataConfig = {
-                range: 0,
-                density: 5,
-                dimension: 1,
-                alpha: 2
-            };
-
-            var genConfigs = [];
-            var genDatas = [];
-            var alpha = 0.1;
-            var hlnc = 10;
-            var density = 20000;
-
-            for (var hlc = 0; hlc <= 2; hlc++) {
+            var density = 2000;
+            if (isMLP()) {
                 for (var m = 0; m < 2; m++) {
                     for (var la = 1; la > 0; la -= 0.49) {
                         var dC = _.clone(dataConfig);
                         var aC = _.clone(annConfig);
 
                         aC.inputLayerCount = inputs;
-                        aC.hiddenLayerCount = hlc;
-                        aC.hiddenLayerNeuronCount = hlc !== 0 ? 10 : 0;
+                        aC.hiddenLayerCount = 2;
+                        aC.hiddenLayerNeuronCount = 50;
                         aC.eta = 0.01;
                         aC.momentum = m % 2 === 0;
                         aC.alpha = alpha;
@@ -123,14 +69,120 @@
                         genDatas.push(dC);
                     }
                 }
+            } else {
+                for (var rho = 0.1; rho <= 1; rho += 0.1) {
+                    for (var m = 0; m < 2; m++) {
+                        var dC = _.clone(dataConfig);
+                        var aC = _.clone(annConfig);
+
+                        aC.hiddenLayerNeuronCount = 100;
+                        aC.eta = 0.5;
+                        aC.momentum = m % 2 === 0;
+                        aC.alpha = alpha;
+                        aC.calculateSigma = true;
+                        aC.rho = rho;
+
+                        dC.range = 0.5;
+                        dC.density = density;
+                        dC.dimension = inputs;
+
+                        genConfigs.push(aC);
+                        genDatas.push(dC);
+                    }
+                }
             }
 
             $('.rosenbrock .settings').val(JSON.stringify(genDatas));
             $('.ann .ann-settings').val(JSON.stringify(genConfigs));
         }
 
+        function generateTestData() {
+            var inputs = Number($(this).attr('id'));
+
+            var annConfig = {
+                hiddenLayerCount: 1,
+                hiddenLayerNeuronCount: 5,
+                outputCount: 1,
+                inputLayerCount: inputs,
+                eta: 0.5,
+                alpha: 0.25,
+                momentum: false,
+                runOutputWeightChangeFirst: false
+
+            };
+
+            var dataConfig = {
+                range: 0,
+                density: 5,
+                dimension: inputs,
+                alpha: 2
+            };
+
+            var genConfigs = [];
+            var genDatas = [];
+            var alpha = 0.1;
+            var hlnc = 10;
+            var density = 2000;
+
+            if (isMLP()) {
+                for (var hlc = 0; hlc <= 2; hlc++) {
+                    for (var m = 0; m < 2; m++) {
+                        for (var la = 1; la > 0; la -= 0.49) {
+                            var dC = _.clone(dataConfig);
+                            var aC = _.clone(annConfig);
+
+                            aC.hiddenLayerCount = hlc;
+                            aC.hiddenLayerNeuronCount = hlc !== 0 ? 10 : 0;
+                            aC.eta = 0.01;
+                            aC.momentum = m % 2 === 0;
+                            aC.alpha = alpha;
+
+                            dC.range = 0.5;
+                            dC.density = density;
+                            dC.alpha = la;
+
+                            genConfigs.push(aC);
+                            genDatas.push(dC);
+                        }
+                    }
+                }
+            } else {
+                for (var hlnc = 10; hlnc <= 70; hlnc += 10) {
+                    for (var rho = 0.005; rho <= 1; rho += 0.002) {
+                        for (var rho = 0.005; rho <= 1; rho += 0.002) {
+                            var dC = _.clone(dataConfig);
+                            var aC = _.clone(annConfig);
+
+                            aC.hiddenLayerNeuronCount = hlnc;
+                            aC.eta = 0.5;
+                            aC.rho = rho;
+
+                            dC.range = 0.5;
+                            dC.density = density;
+                            dC.dimension = inputs;
+
+                            genConfigs.push(aC);
+                            genDatas.push(dC);
+                        }
+                    }
+                }
+            }
+
+            $('.rosenbrock .settings').val(JSON.stringify(genDatas));
+            $('.ann .ann-settings').val(JSON.stringify(genConfigs));
+        }
+
+        function isMLP() {
+            return $('#network-type').val() === 'MLP';
+        }
+
+
         function configToCSV(config) {
-            return [config.inputLayerCount, config.hiddenLayerCount, config.hiddenLayerNeuronCount, config.eta, config.momentum, config.alpha].join(',');
+            if (isMLP()) {
+                return [config.inputLayerCount, config.hiddenLayerCount, config.hiddenLayerNeuronCount, config.eta, config.momentum, config.alpha].join(',');
+            } else {
+                return [config.inputLayerCount, config.hiddenLayerNeuronCount, config.eta, config.rho, network.getCalculatedSigma(), network.getAverageDistance()].join(',');
+            }
         }
 
         function dataConfigToCSV(config) {
@@ -157,11 +209,16 @@
                     var data = dataConfigs[configIdx];
 
                     $('#test-status').html('Running Tests: ' + (configIdx + 1) + ' / ' + configs.length);
-                    network = new ANN(config);
 
                     // TODO: Check the dim
                     t = tables['Rosenbrock' + data.dimension](data.range, data.density);
                     NetworkMath.alpha = data.alpha;
+
+                    if (isMLP()) {
+                        network = new ANN(config);
+                    } else {
+                        network = RBF.create(t, config);
+                    }
 
                     var answers = NetworkExperiments.five2Training(network, t);
                     storeData(answers[0] + ',' + answers[1] + ',' + answers[2] + ',' + configToCSV(config) + ',' + dataConfigToCSV(data), filename);
@@ -236,6 +293,10 @@
     }
 ]</textarea>
     </div>
+    <select id='network-type'>
+        <option>RBF</option>
+        <option>MLP</option>
+    </select>
     <button id='run-test'>Run Test</button>
     <button id='large-test'>Run Large Test</button><br/>
     <button id='2' class='generate-data'>Generate Test Data 2</button>
