@@ -15153,7 +15153,8 @@ var RBFNetwork = function(configuration) {
     this._rbfInitialize();
 };
 
-RBFNetwork.prototype = _.assign(ANN.prototype, {
+RBFNetwork.prototype = _.assign(RBFNetwork.prototype, ANN.prototype);
+RBFNetwork.prototype = _.assign(RBFNetwork.prototype, {
 
     getAverageDistance: function() {
         var dist = 0;
@@ -15801,14 +15802,35 @@ function rosenbrock() {
 },{}],"jgK1Ii":[function(require,module,exports){
 var _ = require('lodash');
 
+function average(arr) {
+    var sum = 0;
+    for (var i = 0; i < arr.length; i++) {
+        sum += arr[i];
+    }
+    return sum / arr.length;
+}
 /**
  * Takes the data set and splits it in half for a 5 / 2 test.
  * @param t
  */
 function splitData(t) {
-    var dataSet1 = [], dataSet2 = [];
-    var half = t.length / 2;
+    var dataSet1 = [], dataSet2 = [], validation = [];
+    var half = Math.floor((t.length - (t.length * .2)) / 2);
+    var remainder = t.length - half * 2;
     var tClone = _.clone(t);
+
+    while (remainder) {
+        var a = Math.floor(Math.random() * tClone.length);
+        if (a % 2 === 1) {
+            a--;
+        }
+
+        var input = tClone.splice(a, 1)[0];
+        var output = tClone.splice(a, 1)[0];
+        validation.push(input);
+        validation.push(output);
+        remainder--;
+    }
 
     while (tClone.length) {
         var a = Math.floor(Math.random() * 100) % 2 === 0;
@@ -15832,7 +15854,7 @@ function splitData(t) {
         }
     }
 
-    return [dataSet1, dataSet2];
+    return [dataSet1, dataSet2, validation];
 }
 
 
@@ -15913,6 +15935,24 @@ function testData(network, t) {
 }
 
 /**
+ * Trains the network with random
+ * @param {NeuralNetwork} network
+ * @param t
+ */
+function randomTraining(network, t) {
+
+    for (var i = 0, len = t.length; i < len; i++) {
+        var r = Math.floor(Math.random() * len);
+        if (r % 2 === 1) {
+            r--;
+        }
+
+        network.train(t[r], t[r + 1]);
+    }
+    return i;
+}
+
+/**
  * Gets the training stats from the training data.
  * @param trainingData
  * @returns {Number[]} Accuracy, Error, Count  These are non averaged values
@@ -15934,7 +15974,7 @@ function getStats(trainingData) {
         for (var j = 0; j < outs.length; j++) {
 
             // NOTE: I know that there will only be one output
-            accuracy += errors[j] / exps[j];
+            accuracy += outs[j] / exps[j];
             error += Math.abs(errors[j]);
         }
     }
@@ -15947,38 +15987,138 @@ var NetworkExperiments = {
     /**
      * @param {NeuralNetwork} network
      * @param {Array.<Number[]>} t
+     * @param {Number} [precision]
      * @return {Number[]} avg accuracy, avg error, test input count
      */
-    five2Training: function(network, t) {
+    five2Training: function(network, t, precision) {
         var accuracy = 0;
         var error = 0;
         var tests = 0;
+        precision = precision || 10000;
 
-        for (var i = 0; i < 5; i++) {
+        for (var fiveTests = 0; fiveTests < 5; fiveTests++) {
 
             var datasets = splitData(t);
 
             network.reset();
-            for (var j = 0; j < 20; j++) {
-                trainData(network, datasets[0]);
-            }
-            var stats1 = getStats(testData(network, datasets[1]));
+            var stats = [];
 
-            network.reset();
-            for (var j = 0; j < 20; j++) {
-                trainData(network, datasets[1]);
-            }
-            var stats2 = getStats(testData(network, datasets[0]));
+            for (var i = 0, j = 1; i <= 1; i++, j--) {
 
-            accuracy += stats1[0] + stats2[0];
-            error += stats1[1] + stats2[1];
-            tests += stats1[2] + stats2[2];
+                // quick 50 times through ds
+                for (var k = 0; k < 50; k++) {
+                    trainData(network, datasets[i]);
+                }
+                stats.push(getStats(testData(network, datasets[j])));
+            }
+
+            accuracy += stats[0][0] + stats[1][0];
+            error += stats[0][1] + stats[1][1];
+            tests += stats[0][2] + stats[1][2];
         }
         network.reset();
 
         // Returns the average accuracy, error, and the count of test points that
         // were tested
         return [accuracy / tests, error / tests, tests];
+    },
+
+    /**
+     * The converging algorithm will work in this way.  It will attempt to feed through the test
+     * data seeing if there are improvements.  If there are improvements based on a certain error
+     * amount.  If the improvements are not beyond a certain delta then it will be considered
+     * "converged"
+     *
+     * @param {NeuralNetwork} network
+     * @param {Array.<Number[]>} t
+     * @param {Number} delta
+     */
+    converge: function(network, t, delta) {
+
+        var converged = false;
+        var datasets = splitData(t);
+        var previousValidation = [];
+        var secondPrev = [];
+        var tests = 0;
+
+        while (!converged) {
+
+            for (var k = 0; k < 50; k++) {
+                tests += randomTraining(network, datasets[0]);
+                tests += randomTraining(network, datasets[1]);
+            }
+
+            var answers = getStats(testData(network, datasets[2]));
+
+
+            if (previousValidation.length === 7 && secondPrev.length === 7) {
+                var avg1 = average(previousValidation);
+                var avg2 = average(secondPrev);
+                var diff = Math.abs((avg1 - avg2) / avg2);
+                if (diff < delta) {
+                    converged = true;
+                }
+
+                secondPrev.shift();
+            }
+
+            previousValidation.push(answers[1]);
+            if (previousValidation.length === 8) {
+                secondPrev.push(previousValidation.shift());
+            }
+        }
+
+        return [tests, answers];
+    },
+
+    /**
+     * A different approach to be considered "Converged"  This one involves
+     * finding the average differences lower than delta provided
+     * @param {NeuralNetwork} network
+     * @param {Array.<Number[]>} t
+     * @param {Number} delta
+     * @returns {Array}
+     */
+    converge2: function(network, t, delta) {
+
+        var converged = false;
+        var datasets = splitData(t);
+        var runningDiff = [];
+        var tests = 0;
+        var prevVal;
+        var prevMil = 1000000;
+
+        while (!converged) {
+
+            for (var k = 0; k < 50; k++) {
+                tests += randomTraining(network, datasets[0]);
+                tests += randomTraining(network, datasets[1]);
+            }
+
+            var answers = getStats(testData(network, datasets[2]));
+            if (runningDiff.length === 7) {
+                var avg = average(runningDiff);
+                if (avg < delta) {
+                    converged = true;
+                } else {
+
+                    // Fail safe for convergence
+                    if (prevMil < tests) {
+                        delta += delta;
+                        prevMil += 1000000;
+                    }
+                }
+
+                runningDiff.shift();
+            }
+
+            if (prevVal) {
+                runningDiff.push(Math.abs(prevVal - answers[1]));
+            }
+            prevVal = answers[1];
+        }
+
+        return [tests, answers];
     },
 
     /**
@@ -25195,8 +25335,8 @@ module.exports=require('T1/mF8');
 module.exports=require('0/WfN8');
 },{}],"truth-tables":[function(require,module,exports){
 module.exports=require('NIfbEe');
-},{}],"NetworkExperiments":[function(require,module,exports){
-module.exports=require('jgK1Ii');
+},{}],"NetworkMath":[function(require,module,exports){
+module.exports=require('KZyFN2');
 },{}],"NetworkStates":[function(require,module,exports){
 module.exports=require('SNwojz');
 },{}],20:[function(require,module,exports){
@@ -25210,10 +25350,10 @@ module.exports=require('pVFtis');
 module.exports=require('sXMxnC');
 },{}],"Observable":[function(require,module,exports){
 module.exports=require('PUWM5E');
+},{}],"NetworkExperiments":[function(require,module,exports){
+module.exports=require('jgK1Ii');
 },{}],"RBFNetwork":[function(require,module,exports){
 module.exports=require('GcIonl');
-},{}],"NetworkMath":[function(require,module,exports){
-module.exports=require('KZyFN2');
 },{}],"lodash":[function(require,module,exports){
 module.exports=require('RXtuav');
 },{}],"rxjs-bindings":[function(require,module,exports){
