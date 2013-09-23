@@ -14548,6 +14548,11 @@ var NeuralNetwork = function(configuration) {
  */
 NeuralNetwork.prototype = {
     /**
+     * The name of the network
+     */
+    name: 'mlp',
+
+    /**
      * Runs once through the training cycle.
      * @param inputs
      * @param expectedOutputs
@@ -16043,7 +16048,8 @@ var NetworkExperiments = {
 
         while (!converged) {
 
-            for (var k = 0; k < 50; k++) {
+            var max = network.name === 'mlp' ? 500 : 50;
+            for (var k = 0; k < max; k++) {
                 tests += randomTraining(network, datasets[0]);
                 tests += randomTraining(network, datasets[1]);
             }
@@ -16090,7 +16096,8 @@ var NetworkExperiments = {
 
         while (!converged) {
 
-            for (var k = 0; k < 50; k++) {
+            var max = network.name === 'mlp' ? 500 : 50;
+            for (var k = 0; k < max; k++) {
                 tests += randomTraining(network, datasets[0]);
                 tests += randomTraining(network, datasets[1]);
             }
@@ -16104,7 +16111,7 @@ var NetworkExperiments = {
 
                     // Fail safe for convergence
                     if (prevMil < tests) {
-                        delta += delta;
+                        delta += 0.05;
                         prevMil += 1000000;
                     }
                 }
@@ -25335,8 +25342,8 @@ module.exports=require('T1/mF8');
 module.exports=require('0/WfN8');
 },{}],"truth-tables":[function(require,module,exports){
 module.exports=require('NIfbEe');
-},{}],"NetworkMath":[function(require,module,exports){
-module.exports=require('KZyFN2');
+},{}],"NetworkExperiments":[function(require,module,exports){
+module.exports=require('jgK1Ii');
 },{}],"NetworkStates":[function(require,module,exports){
 module.exports=require('SNwojz');
 },{}],20:[function(require,module,exports){
@@ -25350,10 +25357,10 @@ module.exports=require('pVFtis');
 module.exports=require('sXMxnC');
 },{}],"Observable":[function(require,module,exports){
 module.exports=require('PUWM5E');
-},{}],"NetworkExperiments":[function(require,module,exports){
-module.exports=require('jgK1Ii');
 },{}],"RBFNetwork":[function(require,module,exports){
 module.exports=require('GcIonl');
+},{}],"NetworkMath":[function(require,module,exports){
+module.exports=require('KZyFN2');
 },{}],"lodash":[function(require,module,exports){
 module.exports=require('RXtuav');
 },{}],"rxjs-bindings":[function(require,module,exports){

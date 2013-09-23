@@ -48,7 +48,7 @@
             annC.eta = 0.2;
             dataC.dimension = inputs;
             dataC.range = 0.75;
-            dataC.density = 350;
+            dataC.density = 330;
 
             var genConfigs = [];
             var genDatas = [];
@@ -158,19 +158,26 @@
                 var annC = _.clone(annConfig);
                 var dataC = _.clone(dataConfig);
                 var id = this.id;
-                var inputs = $('#in-' + id).val();
+                var inputs = Number($('#in-' + id).val());
                 var filename = $('#filename').val();
+                var baseConverge = 0.25;
+                var baseConverge2 = 1;
+                var delta = this.id === 'converge' ? baseConverge * inputs : baseConverge2 * inputs;
+                var dataPoints = 30;
 
                 dataC.dimension = inputs;
                 annC.inputLayerCount = inputs;
-                t = tables['Rosenbrock' + dataC.dimension](dataC.range, dataC.density);
-                annC.hiddenLayerNeuronCount = 75;
-                annC.hiddenLayerCount = 1;
                 annC.momentum = false;
-                annC.eta = 0.002;
+                annC.hiddenLayerNeuronCount = 70;
+                annC.eta = isMLP() ? 0.001 : 0.1;
+                annC.alpha = 0.2;
+                annC.rho = 0.231;
+                NetworkMath.alpha = 0.4384;
+
+                t = tables['Rosenbrock' + dataC.dimension](dataC.range, dataC.density);
 
                 if (isMLP()) {
-                    annC.hiddenLayerCount = 2;
+                    annC.hiddenLayerCount = Number($('#layers').val());
                     network = new ANN(annC);
                 } else {
                     network = RBF.create(t, annC);
@@ -178,11 +185,11 @@
 
                 var i = 0;
                 function runTest() {
-                    $('#output').html('Running test: ' + i + ' out of ' + 10);
+                    $('#output').html('Running test: ' + i + ' out of ' + dataPoints);
                     network.reset();
-                    var answers = NetworkExperiments[id](network, t, 0.01);
+                    var answers = NetworkExperiments[id](network, t, delta);
                     storeData(answers, filename);
-                    if (i++ < 10) {
+                    if (i++ < dataPoints) {
                         window.setTimeout(runTest);
                     }
                 }
@@ -231,6 +238,7 @@
         <option>MLP</option>
     </select>
     <button id='run-test'>Run Test</button><br/>
+    Layers: <input type='text' value='0' id='layers'>
     Converge: <input type='text' value='2' id='in-converge'><button class='converge' id='converge'>Converge</button><br/>
     Converge2: <input type='text' value='2' id='in-converge2'><button class='converge' id='converge2'>Converge2</button><br/>
     <button id='2' class='generate-data'>Generate Test Data 2</button>
