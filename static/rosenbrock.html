@@ -35,7 +35,7 @@
 
         var dataConfig = {
             range: 0.5,
-            density: 200,
+            density: 500,
             alpha: 0.1
         };
 
@@ -160,9 +160,7 @@
                 var id = this.id;
                 var inputs = Number($('#in-' + id).val());
                 var filename = $('#filename').val();
-                var baseConverge = 0.25;
-                var baseConverge2 = 1;
-                var delta = this.id === 'converge' ? baseConverge * inputs : baseConverge2 * inputs;
+                var baseTests = 25000;
                 var dataPoints = 30;
 
                 dataC.dimension = inputs;
@@ -187,7 +185,7 @@
                 function runTest() {
                     $('#output').html('Running test: ' + i + ' out of ' + dataPoints);
                     network.reset();
-                    var answers = NetworkExperiments[id](network, t, delta);
+                    var answers = NetworkExperiments.fixedTests(network, t, baseTests * i);
                     storeData(answers, filename);
                     if (i++ < dataPoints) {
                         window.setTimeout(runTest);

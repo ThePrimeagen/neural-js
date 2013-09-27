@@ -14426,7 +14426,7 @@ var global=self;// Copyright (c) Microsoft Open Technologies, Inc. All rights re
     }
 }(this));
 },{}],"T1/mF8":[function(require,module,exports){
-var $ = require('jquery');
+var _ = require('lodash');
 var Neuron = require('./lib/Neuron');
 var NetworkMath = require('./lib/NetworkMath');
 var NetworkStates = require('./lib/NetworkStates');
@@ -14538,7 +14538,7 @@ var NeuralNetwork = function(configuration) {
      */
     this._timeSpentTraining = 0;
 
-    $.extend(this, configuration);
+    _.assign(this, configuration);
     this._initialize();
 };
 
@@ -14971,7 +14971,7 @@ NeuralNetwork.prototype = {
             var out = o.output;
             var err = (targetOutputs[i] - out);
             o.error = o.dActivationFn(o.output) * err;
-            this._mse = o.error;
+            this._mse += o.error * o.error;
         }
 
     },
@@ -15121,11 +15121,11 @@ NeuralNetwork.prototype = {
 };
 
 module.exports = NeuralNetwork;
-},{"./lib/NetworkMath":"KZyFN2","./lib/NetworkStates":"SNwojz","./lib/Neuron":10,"jquery":"0/WfN8"}],"GcIonl":[function(require,module,exports){
-var ANN = require('NeuralNetwork');
+},{"./lib/NetworkMath":"KZyFN2","./lib/NetworkStates":"SNwojz","./lib/Neuron":10,"lodash":"RXtuav"}],"GcIonl":[function(require,module,exports){
+var ANN = require('./NeuralNetwork');
 var _ = require('lodash');
-var NetworkMath = require('NetworkMath');
-var NetworkStates = require('NetworkStates');
+var NetworkMath = require('./lib/NetworkMath');
+var NetworkStates = require('./lib/NetworkStates');
 
 
 var RBFNetwork = function(configuration) {
@@ -15283,7 +15283,7 @@ RBFNetwork.create = function(t, configuration) {
 };
 
 module.exports = RBFNetwork;
-},{"NetworkMath":"KZyFN2","NetworkStates":"SNwojz","NeuralNetwork":"T1/mF8","lodash":"RXtuav"}],"KZyFN2":[function(require,module,exports){
+},{"./NeuralNetwork":"T1/mF8","./lib/NetworkMath":"KZyFN2","./lib/NetworkStates":"SNwojz","lodash":"RXtuav"}],"KZyFN2":[function(require,module,exports){
 var _ = require('lodash');
 
 /**
@@ -15463,7 +15463,7 @@ module.exports = NetworkStates;
 
 },{}],10:[function(require,module,exports){
 var _ = require('lodash');
-var NetworkUtil = require('NetworkMath');
+var NetworkUtil = require('./NetworkMath');
 
 var toString = function() {
     var w = [];
@@ -15515,7 +15515,7 @@ module.exports = function(id) {
 
     return n;
 };
-},{"NetworkMath":"KZyFN2","lodash":"RXtuav"}],"NIfbEe":[function(require,module,exports){
+},{"./NetworkMath":"KZyFN2","lodash":"RXtuav"}],"NIfbEe":[function(require,module,exports){
 module.exports = {
     X: function() {
         var data = [];
@@ -15820,8 +15820,8 @@ function average(arr) {
  */
 function splitData(t) {
     var dataSet1 = [], dataSet2 = [], validation = [];
-    var half = Math.floor((t.length - (t.length * .2)) / 2);
-    var remainder = t.length - half * 2;
+    var remainder = Math.floor(t.length * .1);
+    var half = Math.floor((t.length - remainder) / 2);
     var tClone = _.clone(t);
 
     while (remainder) {
@@ -16125,6 +16125,81 @@ var NetworkExperiments = {
             prevVal = answers[1];
         }
 
+        return [tests, answers];
+    },
+
+    /**
+     * Use mse to determine if converged.
+     * @param network
+     * @param t
+     * @param delta
+     */
+    converge3: function(network, t, delta) {
+        var converged = false;
+        var datasets = splitData(t);
+        var runningDiff = [];
+        var tests = 0;
+        var prevVal;
+        var prevMil = 1000000;
+
+        while (!converged) {
+
+            var max = network.name === 'mlp' ? 1 : 5;
+            for (var k = 0; k < max; k++) {
+                tests += randomTraining(network, datasets[0]);
+                tests += randomTraining(network, datasets[1]);
+            }
+
+            var answers = getStats(testData(network, datasets[2]));
+            if (runningDiff.length === 7) {
+                var avg = average(runningDiff);
+                if (avg < delta) {
+                    converged = true;
+                } else {
+
+                    // Fail safe for convergence
+                    if (prevMil < tests) {
+                        delta += 1;
+                        prevMil += 1000000;
+                    }
+                }
+
+                runningDiff.shift();
+            }
+
+            if (prevVal) {
+                runningDiff.push(Math.abs(prevVal - Math.sqrt(network._mse)));
+            }
+            prevVal = Math.sqrt(network._mse);
+
+            if (isNaN(network._mse)) {
+                converged = true;
+            }
+            network._mse = 0;
+        }
+
+        return [tests, answers];
+    },
+
+    /**
+     * Tests a fixed number of trains
+     * @param network
+     * @param t
+     * @param tests
+     * @returns {Array}
+     */
+    fixedTests: function(network, t, testPoints) {
+
+        var datasets = splitData(t);
+        var tests = 0;
+        network.reset();
+
+        for (var k = 0; tests < testPoints; k++) {
+            tests += randomTraining(network, datasets[0]);
+            tests += randomTraining(network, datasets[1]);
+        }
+
+        var answers = getStats(testData(network, datasets[2]));
         return [tests, answers];
     },
 
@@ -25336,14 +25411,14 @@ d3 = function() {
   });
   return d3;
 }();
-},{}],"NeuralNetwork":[function(require,module,exports){
-module.exports=require('T1/mF8');
+},{}],"RBFNetwork":[function(require,module,exports){
+module.exports=require('GcIonl');
 },{}],"jquery":[function(require,module,exports){
 module.exports=require('0/WfN8');
 },{}],"truth-tables":[function(require,module,exports){
 module.exports=require('NIfbEe');
-},{}],"NetworkExperiments":[function(require,module,exports){
-module.exports=require('jgK1Ii');
+},{}],"NetworkMath":[function(require,module,exports){
+module.exports=require('KZyFN2');
 },{}],"NetworkStates":[function(require,module,exports){
 module.exports=require('SNwojz');
 },{}],20:[function(require,module,exports){
@@ -25357,14 +25432,14 @@ module.exports=require('pVFtis');
 module.exports=require('sXMxnC');
 },{}],"Observable":[function(require,module,exports){
 module.exports=require('PUWM5E');
-},{}],"RBFNetwork":[function(require,module,exports){
-module.exports=require('GcIonl');
-},{}],"NetworkMath":[function(require,module,exports){
-module.exports=require('KZyFN2');
-},{}],"lodash":[function(require,module,exports){
-module.exports=require('RXtuav');
 },{}],"rxjs-bindings":[function(require,module,exports){
 module.exports=require('KJE/JT');
+},{}],"NetworkExperiments":[function(require,module,exports){
+module.exports=require('jgK1Ii');
+},{}],"lodash":[function(require,module,exports){
+module.exports=require('RXtuav');
+},{}],"NeuralNetwork":[function(require,module,exports){
+module.exports=require('T1/mF8');
 },{}],"RXtuav":[function(require,module,exports){
 var global=self;/**
  * @license
