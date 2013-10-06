@@ -47,7 +47,7 @@ function browserifyExternals(b, externals) {
     b.require(externals + 'Observable.js', {expose: 'Observable'});
     b.require('lodash', {expose: 'lodash'});
     b.require('./lib/neural-networks/NeuralNetwork', {expose: 'NeuralNetwork'});
-    b.require('./lib/fuzzy-logic/util.js', {expose: 'FuzzyUtil'});
+    b.require('./lib/ANFIS/util.js', {expose: 'FuzzyUtil'});
     b.require('./lib/neural-networks/RBFNetwork', {expose: 'RBFNetwork'});
     b.require('./lib/neural-networks/lib/NetworkMath', {expose: 'NetworkMath'});
     b.require('./lib/neural-networks/lib/NetworkStates', {expose: 'NetworkStates'});
