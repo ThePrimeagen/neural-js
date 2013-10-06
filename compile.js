@@ -53,6 +53,5 @@ function browserifyExternals(b, externals) {
     b.require('./lib/neural-networks/lib/NetworkMath', {expose: 'NetworkMath'});
     b.require('./lib/neural-networks/lib/NetworkStates', {expose: 'NetworkStates'});
     b.require('./lib/util/NetworkExperiments', {expose: 'NetworkExperiments'});
-    b.require('./lib/visualization/html/D3Visualizer', {expose: 'D3Visualizer'});
     b.require('./lib/truth-tables', {expose: 'truth-tables'});
 }

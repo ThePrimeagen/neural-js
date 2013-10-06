@@ -17,7 +17,6 @@
         "mkpath": "*",
         "rxjs-fs": "*",
         "lodash": "*",
-        "d3": "*",
         "jquery": "*",
         "mocha": "*"
     }

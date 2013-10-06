@@ -7,7 +7,6 @@
         var ANN = require('NeuralNetwork');
         var tables = require('truth-tables');
         var $ = require('jquery');
-        var D3Visualizer = require('D3Visualizer');
         var NetworkMath = require('NetworkMath');
         var NetworkStates = require('NetworkStates');
         var NetworkExperiments = require('NetworkExperiments');
@@ -76,8 +75,6 @@
         $(function() {
             var $output = $('#output');
             var t;
-            var viz = new D3Visualizer('#network');
-
             /** @type NeuralNetwork */
             var network;
 
@@ -153,7 +150,6 @@
             function updateUi(output) {
                 output = output || network.getOutput();
                 $output.html(output);
-                viz.update(network.serialize());
             }
             function reset() {
                 t = getTrainingSet();

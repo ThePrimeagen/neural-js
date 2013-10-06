@@ -11,7 +11,6 @@
     var $ = require('jquery');
     var _ = require('lodash');
     var NetworkMath = require('NetworkMath');
-    var D3Visualizer = require('D3Visualizer');
     var NetworkExperiments = require('NetworkExperiments');
     var network, t;
     var configs;
@@ -32,7 +31,6 @@
 
     $(function() {
         var $output = $('#output');
-        var viz = new D3Visualizer('#network');
         var t, network;
 
         $('#run-test').click(function() {
@@ -102,7 +100,6 @@
         function updateUi(output) {
             output = output || network.getOutput();
             $output.html(output);
-            viz.update(network.serialize());
         }
     });
 </script>
