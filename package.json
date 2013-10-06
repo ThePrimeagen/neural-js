@@ -18,6 +18,7 @@
         "rxjs-fs": "*",
         "lodash": "*",
         "d3": "*",
-        "jquery": "*"
+        "jquery": "*",
+        "mocha": "*"
     }
 }
