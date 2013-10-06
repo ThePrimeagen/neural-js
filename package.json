@@ -16,7 +16,6 @@
         "browserify": "*",
         "mkpath": "*",
         "rxjs-fs": "*",
-        "lodash": "*",
-        "jquery": "*"
+        "lodash": "*"
     }
 }
