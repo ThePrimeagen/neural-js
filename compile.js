@@ -4,6 +4,21 @@ var fs = require('fs');
 var mkpath = require('mkpath');
 var _ = require('lodash');
 
+// TODO: Create this into something read from manifest.json
+function browserifyExternals(b, externals) {
+    b.require(externals + 'rx.js', {expose: 'rx'});
+    b.require(externals + 'rx.binding.js', {expose: 'rxjs-bindings'});
+    b.require(externals + 'Observable.js', {expose: 'Observable'});
+    b.require('lodash', {expose: 'lodash'});
+    b.require('./lib/neural-networks/NeuralNetwork', {expose: 'NeuralNetwork'});
+    b.require('./lib/ANFIS/util.js', {expose: 'FuzzyUtil'});
+    b.require('./lib/neural-networks/RBFNetwork', {expose: 'RBFNetwork'});
+    b.require('./lib/neural-networks/lib/NetworkMath', {expose: 'NetworkMath'});
+    b.require('./lib/neural-networks/lib/NetworkStates', {expose: 'NetworkStates'});
+    b.require('./lib/util/NetworkExperiments', {expose: 'NetworkExperiments'});
+    b.require('./lib/truth-tables', {expose: 'truth-tables'});
+}
+
 module.exports = {
     /**
      * Compiles the program
@@ -40,17 +55,3 @@ module.exports = {
     }
 };
 
-// TODO: Create this into something read from manifest.json
-function browserifyExternals(b, externals) {
-    b.require(externals + 'rx.js', {expose: 'rx'});
-    b.require(externals + 'rx.binding.js', {expose: 'rxjs-bindings'});
-    b.require(externals + 'Observable.js', {expose: 'Observable'});
-    b.require('lodash', {expose: 'lodash'});
-    b.require('./lib/neural-networks/NeuralNetwork', {expose: 'NeuralNetwork'});
-    b.require('./lib/ANFIS/util.js', {expose: 'FuzzyUtil'});
-    b.require('./lib/neural-networks/RBFNetwork', {expose: 'RBFNetwork'});
-    b.require('./lib/neural-networks/lib/NetworkMath', {expose: 'NetworkMath'});
-    b.require('./lib/neural-networks/lib/NetworkStates', {expose: 'NetworkStates'});
-    b.require('./lib/util/NetworkExperiments', {expose: 'NetworkExperiments'});
-    b.require('./lib/truth-tables', {expose: 'truth-tables'});
-}
