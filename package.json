@@ -10,7 +10,7 @@
         "rx": "*",
         "rxjs-jquery": "*",
         "ix": "1.0.2",
-        "rx-stats": "0.0.2",
+        "rx-stats": "0.0.4",
         "express": "*",
         "optimist": "*",
         "browserify": "*",
