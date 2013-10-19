@@ -1,6 +1,5 @@
-node ./lib/hand-writer.js MLP letter-rec 2 1 10
-node ./lib/hand-writer.js MLP letter-rec 2 1 60
-node ./lib/hand-writer.js MLP letter-rec 2 1 70
+node ./lib/hand-writer.js MLP letter-rec 2 1 40
+node ./lib/hand-writer.js MLP letter-rec 2 1 50
 node ./lib/hand-writer.js MLP letter-rec 2 2 40
 node ./lib/hand-writer.js MLP letter-rec 2 2 50
 node ./lib/hand-writer.js MLP letter-rec 2 2 60
