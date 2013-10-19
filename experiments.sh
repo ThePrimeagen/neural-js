@@ -1,15 +1,3 @@
-node ./lib/hand-writer.js RBF pen-digits 2 3
-node ./lib/hand-writer.js RBF pen-digits 2 4
-node ./lib/hand-writer.js RBF pen-digits 2 5
-node ./lib/hand-writer.js RBF pen-digits 2 6
-node ./lib/hand-writer.js RBF pen-digits 2 7
-node ./lib/hand-writer.js RBF pen-digits 2 8
-node ./lib/hand-writer.js RBF opt-digits 2 3
-node ./lib/hand-writer.js RBF opt-digits 2 4
-node ./lib/hand-writer.js RBF opt-digits 2 5
-node ./lib/hand-writer.js RBF opt-digits 2 6
-node ./lib/hand-writer.js RBF opt-digits 2 7
-node ./lib/hand-writer.js RBF opt-digits 2 8
 node ./lib/hand-writer.js RBF letter-rec 2 3
 node ./lib/hand-writer.js RBF letter-rec 2 4
 node ./lib/hand-writer.js RBF letter-rec 2 5
