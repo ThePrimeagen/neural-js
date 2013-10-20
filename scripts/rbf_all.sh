@@ -1,3 +1,4 @@
+cd ../
 node ./lib/hand-writer.js RBF letter-rec 2 &
 node ./lib/hand-writer.js RBF letter-rec 4 &
 node ./lib/hand-writer.js RBF letter-rec 6 &
