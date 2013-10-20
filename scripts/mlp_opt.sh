@@ -1,3 +1,4 @@
+cd ../
 node ./lib/hand-writer.js MLP opt-digits 1 20 &
 node ./lib/hand-writer.js MLP opt-digits 1 40 &
 node ./lib/hand-writer.js MLP opt-digits 1 60 &
