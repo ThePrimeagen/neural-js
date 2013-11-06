@@ -9,7 +9,8 @@
     "dependencies": {
         "rx": "*",
         "rxjs-jquery": "*",
-        "ix": "1.0.2",
+        "ix": "*",
+        "ixjs-evolution": "0.0.2",
         "rx-data": "0.1.5",
         "express": "*",
         "optimist": "*",
