@@ -1,0 +1,10 @@
+http://archive.ics.uci.edu/ml/datasets/Energy+efficiency
+http://archive.ics.uci.edu/ml/datasets/Computer+Hardware
+http://archive.ics.uci.edu/ml/datasets/Physicochemical+Properties+of+Protein+Tertiary+Structure
+http://archive.ics.uci.edu/ml/datasets/Pima+Indians+Diabetes
+http://archive.ics.uci.edu/ml/datasets/Ecoli
+http://archive.ics.uci.edu/ml/datasets/Yacht+Hydrodynamics
+http://archive.ics.uci.edu/ml/datasets/seeds
+http://archive.ics.uci.edu/ml/datasets/Mammographic+Mass
+http://archive.ics.uci.edu/ml/datasets/Blood+Transfusion+Service+Center
+http://archive.ics.uci.edu/ml/datasets/banknote+authentication#
