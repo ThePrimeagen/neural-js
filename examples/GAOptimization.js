@@ -11,7 +11,10 @@ var args = process.argv;
 
 //Grab passed in values
 var networkType = args[2];
-var dataType = args[3];
+var dataSet = args[3];
+var mutationRate = args[4];
+var baseSigma = args[5];
+var heightAdjust = args[6];
 
 //Set up defaults
 var dataC = _.clone(defaults.dataConfig);
@@ -22,68 +25,13 @@ annCon.momentum = false;
 annCon.hiddenLayerNeuronCount = 70;
 
 //Build our data set
-var dataParser = require('./test-data/data-parser');
+var dataParser = require('./../data/project3_data/data-parser');
 
 // gets the data set from file
-dataParser[dataType](buildDataSet);
+dataParser[dataSet](buildDataSet);
 
 function buildDataSet(data, numInputs, numOutputs) {
 
-    annCon.inputLayerCount = numInputs;
-    annCon.outputCount = numOutputs;
-    transformOutput = dataParser.transformOutput;
-    var dataTypeName = dataType.split('-');
-    var filename = networkType + dataTypeName[0].charAt(0) + dataTypeName[1].charAt(0);
-
-    if(networkType === 'RBF') {
-        annCon.eta = 0.1;
-        annCon.nodesPerDim = Number(args[4]) || 3;   
-        network = new RBFController(annCon, data);
-        filename += annCon.nodesPerDim;
-    } else if (networkType === 'MLP') {
-        annCon.eta = 0.05;
-        annCon.hiddenLayerCount = Number(args[4]) || 2;
-        annCon.hiddenLayerNeuronCount = Number(args[5]) || 75;
-        network = new MLPController(annCon, data);
-        filename += annCon.hiddenLayerCount;
-        filename += annCon.hiddenLayerNeuronCount;
-    } else if (networkType === 'ANFIS') {
-        // This is actually a controller but it contains similar methods for networks.
-        annCon.numIfs = Number(args[4]) || 3;
-        network = new ANFISController(annCon, data);
-        filename += annCon.numIfs;
-    }
-
-    console.log('Running: ' + filename);
-    // Gets the confusion matrix.  From this we can calculate precision
-    network.name = filename;
-    var results = NetworkExperiments.five2Training(network, data);
-
-    // Cycles through the outs and the expecteds and saves it off for further processing.
-    var outs = results[0];
-    var exps = results[1];
-    var dataStr = "";
-    for (var i = 0; i < outs.length; i++) {
-        dataStr += numOutputs + ',' + outs[i].join(',') + ',' + exps[i];
-    }
-
-    // storeData('raw_data/' + filename, dataStr);
-    var confusionMatrix = NetworkExperiments.confusionMatrix(results, numOutputs);
-    var precision = [];
-    var recall = [];
-    for (var i = 0; i < numOutputs; i++) {
-        precision.push(NetworkExperiments.precision(confusionMatrix, i));
-        recall.push(NetworkExperiments.recall(confusionMatrix, i));
-    }
-
-
-    filename = 'results/' + filename;
-    dataStr = precision + '\n' + recall + '\n';
-    for (var i = 0; i < confusionMatrix.length; i++) {
-        dataStr += confusionMatrix[i] + '\n';
-    }
-    storeData(filename, dataStr);
-    console.log('Finished: ' + filename);
 }
 
 function storeData(filename, data, callback) {
