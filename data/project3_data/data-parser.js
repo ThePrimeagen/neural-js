@@ -1,5 +1,5 @@
 var fs = require('fs');
-var filePrefix = './lib/test-data/'; 
+var filePrefix = './lib/test-data/';
 var _ = require('lodash');
 
 function toNumber(arr) {
@@ -11,14 +11,14 @@ function toNumber(arr) {
 		//Stupid '' is a 0 according to js
 		if((number === 0 && value.indexOf('0') != -1) || number !== 0) {
 			returnArr.push(number);
-		}		 
-	} 
-	return arr; 
+		}
+	}
+	return arr;
 }
 
 /**
  * Transforms the outputs into something useful to be classified.
- * @param  {NeuralNetwork} network 
+ * @param  {NeuralNetwork} network
  * @param  {Neuron[]} outputs
  * @return {Number[]}
  */
@@ -49,35 +49,35 @@ function transformOutput(network, outputs) {
  * Parses the banknotes file and defines its output
  */
 function banknote(callback, small, test) {
-	fs.readFile(filePrefix + 'banknote' + (small ? '.small' : '') + (test ? '.test' : '.train'), function (err, data) {		
+	fs.readFile(filePrefix + 'banknote' + (small ? '.small' : '') + '.data', function (err, data) {
 		var lines = data.toString().split('\n');
 	    callback(buildClassificationData(lines, 2, ','), 4, 2);
 	});
 }
 
 function casp(callback, small, test) {
-	fs.readFile(filePrefix + 'casp' + (small ? '.small' : '') + (test ? '.test' : '.train'), function (err, data) {		
+	fs.readFile(filePrefix + 'casp' + (small ? '.small' : '') + '.data', function (err, data) {
 		var lines = data.toString().split('\n');
 	    callback(buildRegressionData(lines, '\t'), 9, 2);
 	});
 }
 
 function diabetes(callback, small, test) {
-	fs.readFile(filePrefix + 'diabetes' + (small ? '.small' : '') + (test ? '.test' : '.train'), function (err, data) {		
+	fs.readFile(filePrefix + 'diabetes' + (small ? '.small' : '') + '.data', function (err, data) {
 		var lines = data.toString().split('\n');
 	    callback(buildClassificationData(lines, ','), 8, 2);
 	});
 }
 
 function ecoli(callback, small, test) {
-	fs.readFile(filePrefix + 'ecoli' + (small ? '.small' : '') + (test ? '.test' : '.train'), function (err, data) {		
+	fs.readFile(filePrefix + 'ecoli' + (small ? '.small' : '') + '.data', function (err, data) {
 		var lines = data.toString().split('\n');
 	    callback(buildRegressionData(lines, ','), 8, 2);
 	});
 }
 
 function buildClassificationData(lines, outputSize, delimiter) {
-	var returnData = []; 
+	var returnData = [];
 	var outputLine = [];
 	for (var i = 0; i < outputSize; i++) {
 		outputLine.push(0);
@@ -110,10 +110,10 @@ function buildRegressionData(lines, delimiter) {
 module.exports = {
 	'banknote': function(callback) {
 		banknote(callback, false, true);
-	}, 
+	},
 	'banknote-small': function(callback) {
 		banknote(callback, true, true);
-	}, 
+	},
 	'casp': function(callback) {
 		casp(callback, false, true);
 	},
