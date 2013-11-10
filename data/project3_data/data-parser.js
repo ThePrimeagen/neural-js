@@ -63,7 +63,7 @@ function transformOutput(network, outputs) {
 function banknote(callback, small) {
 	fs.readFile(filePrefix + 'banknote' + (small ? '.small' : '') + '.data', function (err, data) {		
 		var lines = data.toString().split('\n');
-	    callback(buildRegressionData(lines, ','), 4, 1);
+	    callback(buildClassificationData(lines, 2, ','), 4, 2);
 	});
 }
 
@@ -77,7 +77,7 @@ function casp(callback, small) {
 function diabetes(callback, small) {
 	fs.readFile(filePrefix + 'diabetes' + (small ? '.small' : '') + '.data', function (err, data) {		
 		var lines = data.toString().split('\n');
-	    callback(buildRegressionData(lines, ','), 8, 1);
+	    callback(buildClassificationData(lines, 2, ','), 8, 2);
 	});
 }
 
@@ -105,7 +105,7 @@ function machine(callback, small) {
 function mammograph(callback, small) {
 	fs.readFile(filePrefix + 'mammograph' + (small ? '.small' : '') + '.data', function (err, data) {		
 		var lines = data.toString().split('\n');
-	    callback(buildRegressionData(lines, ','), 5, 1);
+	    callback(buildClassificationData(lines, 2, ','), 5, 2);
 	});
 }
 
@@ -119,7 +119,7 @@ function seeds(callback, small) {
 function transfusion(callback, small) {
 	fs.readFile(filePrefix + 'transfusion' + (small ? '.small' : '') + '.data', function (err, data) {		
 		var lines = data.toString().split('\n');
-	    callback(buildRegressionData(lines, ','), 4, 1);
+	    callback(buildClassificationData(lines, 2, ','), 4, 2);
 	});
 }
 
