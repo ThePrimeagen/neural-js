@@ -65,7 +65,7 @@ function transformOutput(network, outputs) {
 function banknote(callback, small) {
 	fs.readFile(filePrefix + 'banknote' + (small ? '.small' : '') + '.data', function (err, data) {
 		var lines = data.toString().split('\n');
-	    callback(buildClassificationData(lines, 2, ','), 4, 2);
+	    callback(buildClassificationData(lines, 2, ','), 4, 1);
 	});
 }
 
@@ -82,14 +82,14 @@ function casp(callback, small) {
 function diabetes(callback, small) {
 	fs.readFile(filePrefix + 'diabetes' + (small ? '.small' : '') + '.data', function (err, data) {
 		var lines = data.toString().split('\n');
-	    callback(buildClassificationData(lines, 2, ','), 8, 2);
+	    callback(buildClassificationData(lines, 2, ','), 8, 1);
 	});
 }
 
 function ecoli(callback, small) {
 	fs.readFile(filePrefix + 'ecoli' + (small ? '.small' : '') + '.data', function (err, data) {
 		var lines = data.toString().split('\n');
-	    callback(buildClassificationData(lines, 8, ','), 8, 8);
+	    callback(buildClassificationData(lines, 8, ','), 8, 1);
 	});
 }
 
@@ -110,21 +110,21 @@ function machine(callback, small) {
 function mammograph(callback, small) {
 	fs.readFile(filePrefix + 'mammograph' + (small ? '.small' : '') + '.data', function (err, data) {
 		var lines = data.toString().split('\n');
-	    callback(buildClassificationData(lines, 2, ','), 5, 2);
+	    callback(buildClassificationData(lines, 2, ','), 5, 1);
 	});
 }
 
 function seeds(callback, small) {
 	fs.readFile(filePrefix + 'seeds' + (small ? '.small' : '') + '.data', function (err, data) {
 		var lines = data.toString().split('\n');
-	    callback(buildClassificationData(lines, ' '), 7, 3);
+	    callback(buildClassificationData(lines, ' '), 7, 1);
 	});
 }
 
 function transfusion(callback, small) {
 	fs.readFile(filePrefix + 'transfusion' + (small ? '.small' : '') + '.data', function (err, data) {
 		var lines = data.toString().split('\n');
-	    callback(buildClassificationData(lines, 2, ','), 4, 2);
+	    callback(buildClassificationData(lines, 2, ','), 4, 1);
 	});
 }
 

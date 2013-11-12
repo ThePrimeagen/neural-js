@@ -27,6 +27,7 @@ function ready(data, numberOfInputs, numberOfOutputs) {
     annCon.evoOptions = {};
     annCon.inputLayerCount = numberOfInputs;
     annCon.outputCount = numberOfOutputs;
+    annCon.eta = 0.0001;
 
     if (args[3] === 'RBF') {
         var network = RBFNetwork.createByClusters(annCon, NetworkExperiments.getInputs(data));
