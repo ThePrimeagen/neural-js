@@ -1,4 +1,5 @@
 var evolution = require('ixjs-evolution');
+var RBFNetwork = require('./lib/neural-networks/RBFNetwork');
 var EvolutionaryRBFController = require('./lib/neural-networks/EvolutionaryRBFController');
 var testData = require('./data/project3_data/data-parser');
 var defaults = require('./lib/defaults');
@@ -27,7 +28,11 @@ function ready(data, numberOfInputs, numberOfOutputs) {
     annCon.inputLayerCount = numberOfInputs;
     annCon.outputCount = numberOfOutputs;
 
-    var network = new EvolutionaryRBFController(annCon);
+    if (args[3] === 'RBF') {
+        var network = RBFNetwork.createByClusters(annCon, NetworkExperiments.getInputs(data));
+    } else {
+        var network = new EvolutionaryRBFController(annCon);
+    }
 
     // Gets the results
     var results = NetworkExperiments.newConverge(network, data, validation);
