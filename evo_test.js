@@ -6,7 +6,11 @@ var NetworkExperiments = require('./lib/util/NetworkExperiments');
 var _ = require('lodash');
 var dataC = _.clone(defaults.dataConfig);
 var annCon = _.clone(defaults.annConfig);
-var data = testData['casp-small'](ready);
+var args = process.argv;
+var fs = require('fs');
+
+//Grab passed in values
+var data = testData[args[2]](ready);
 
 function ready(data, numberOfInputs, numberOfOutputs) {
 
@@ -18,11 +22,28 @@ function ready(data, numberOfInputs, numberOfOutputs) {
     annCon.nodesPerDim = 3;
     annCon.validation = validation;
     annCon.t = data;
-    annCon.evo = evolution.constructGA;
+    annCon.evo = evolution['construct' + args[3]];
     annCon.evoOptions = {};
     annCon.inputLayerCount = numberOfInputs;
     annCon.outputCount = numberOfOutputs;
 
     var network = new EvolutionaryRBFController(annCon);
-    network.train(data[0], data[1]);
+
+    // Gets the results
+    var results = NetworkExperiments.newConverge(network, data, validation);
+    var filename = args[2].replace('-', '_');
+    filename += args[3];
+    storeData(filename, results);
+}
+
+function storeData(filename, data, callback) {
+    fs.appendFile('./data/project3_data/results/' + filename + '.csv', data + '\n', function (err) {
+        if (err) {
+            console.log(err);
+        } else {
+            if (callback) {
+                callback.apply();
+            }
+        }
+    });
 }
