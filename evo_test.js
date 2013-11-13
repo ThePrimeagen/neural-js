@@ -21,13 +21,13 @@ function ready(data, numberOfInputs, numberOfOutputs) {
 
     // Sets the data.
     annCon.nodesPerDim = 3;
-    annCon.validation = validation;
     annCon.t = data;
     annCon.evo = evolution['construct' + args[3]];
     annCon.evoOptions = {};
     annCon.inputLayerCount = numberOfInputs;
     annCon.outputCount = numberOfOutputs;
     annCon.eta = 0.0001;
+    annCon.name = args[3];
 
     if (args[3] === 'RBF') {
         var network = RBFNetwork.createByClusters(annCon, NetworkExperiments.getInputs(data));

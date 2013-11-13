@@ -89,7 +89,7 @@ function diabetes(callback, small) {
 function ecoli(callback, small) {
 	fs.readFile(filePrefix + 'ecoli' + (small ? '.small' : '') + '.data', function (err, data) {
 		var lines = data.toString().split('\n');
-	    callback(buildClassificationData(lines, 8, ','), 8, 1);
+	    callback(buildClassificationData(lines, 8, ' '), 8, 1);
 	});
 }
 
@@ -137,21 +137,15 @@ function yacht(callback, small) {
 
 function buildClassificationData(lines, outputSize, delimiter) {
 	var returnData = [];
-	var outputLine = [];
 	var classificationSymbols = [];
-	for (var i = 0; i < outputSize; i++) {
-		outputLine.push(0);
-	}
 
     for(var i in lines) {
         var data = toNumber(lines[i].split(delimiter), classificationSymbols);
 
-        var outputIdx = data.pop();
-        var output = _.clone(outputLine);
-        output[outputIdx] = 1;
+        var output = data.pop();
 
         returnData.push(data);
-        returnData.push(output);
+        returnData.push([output]);
     }
 
     return returnData;
