@@ -29,6 +29,7 @@ function ready(data, numberOfInputs, numberOfOutputs) {
     annCon.eta = 0.0001;
     annCon.name = args[3];
 
+    //Check which optimization algorithm to use
     if (args[3] === 'RBF') {
         var network = RBFNetwork.createByClusters(annCon, NetworkExperiments.getInputs(data));
     } else {

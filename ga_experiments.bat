@@ -1,4 +1,25 @@
-node evo_test.js banknote RBF &
-
-
-ping 192.168.0.1
+node evo_test.js casp RBF
+node evo_test.js casp RBF
+node evo_test.js casp RBF
+node evo_test.js casp RBF
+node evo_test.js casp RBF
+node evo_test.js casp RBF
+node evo_test.js casp RBF
+node evo_test.js casp RBF
+node evo_test.js casp RBF
+node evo_test.js casp RBF
+node evo_test.js casp RBF
+node evo_test.js casp RBF
+node evo_test.js casp RBF
+node evo_test.js casp RBF
+node evo_test.js casp RBF
+node evo_test.js casp RBF
+node evo_test.js casp RBF
+node evo_test.js casp RBF
+node evo_test.js casp RBF
+node evo_test.js casp RBF
+node evo_test.js casp RBF
+node evo_test.js casp RBF
+node evo_test.js casp RBF
+node evo_test.js casp RBF
+node evo_test.js casp RBF
