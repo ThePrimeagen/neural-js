@@ -7,3 +7,15 @@ function ready(data, numberOfInputs, numberOfOutputs) {
         console.log(data[i]);
     }
 }
+
+function storeData(filename, data, callback) {
+    fs.appendFile('./data/project4_data/results/' + filename + '.csv', data + '\n', function (err) {
+        if (err) {
+            console.log(err);
+        } else {
+            if (callback) {
+                callback.apply();
+            }
+        }
+    });
+}
