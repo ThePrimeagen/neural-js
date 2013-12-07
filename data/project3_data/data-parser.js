@@ -145,7 +145,7 @@ function buildClassificationData(lines, outputSize, delimiter) {
         var output = data.pop();
 
         returnData.push(data);
-        returnData.push([output]);
+        //returnData.push([output]);
     }
 
     return returnData;
