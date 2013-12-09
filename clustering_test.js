@@ -7,7 +7,7 @@ var fs = require('fs');
 var aco = require('./lib/aco/ant_colony.js');
 var pso = require('./lib/pso/particle_optimization.js');
 var kmeans = require('./lib/clustering/kmeans.js');
-//var compete = require('./lib/competitive/competitive.js');
+var compete = require('./lib/competitive/competitive.js');
 
 //Grab passed in values
 var data = testData[args[2]](ready);
@@ -51,47 +51,94 @@ function ready(data, numberOfInputs, numberOfOutputs) {
 				bestResult = 10000000000000000000;
 				pso.init(options.numSwarms, options.numClusters, data);
 				resultsArray.push([]);
+
 				for(var i = 0; i < 50; i++) {
 					var best = pso.progress(1, options, data);
 
 					bestResult = Math.min(bestResult, best.min);
 					resultsArray[m].push(bestResult);
 				}
+
 				console.log(bestResult);
 			}
 
-			for(var i = 0; i < resultsArray[0].length; i++) {
-				for(var j = 0; j < resultsArray.length; j++) {
-					results += resultsArray[j][i] + ',';
-				}
-				results += "\n";
-			}
+			results += transformResults(resultsArray);
 			
 
 			break;
 		case ('kmeans') :
 			console.log(args[2] + " k-means");
-			kmeans.init({ data: data, numCenters : args[4] });
-			for(var i = 0; i < 50; i++) {
-				var centroids = kmeans.progress(1);
+			var resultsArray = [];
+			
 
-				var value = _.reduce(_.map(centroids.centers, function(center) {
-					return _.reduce(center.data, function (cur, next) {
-						return kmeans.euclidean(next, center.position) + ((cur instanceof Array) ? kmeans.euclidean(cur, center.position) : cur);
+			for(var m = 0; m < 10; m ++) {
+				kmeans.init({ data: data, numCenters : args[4] });
+				bestResult = 10000000000000000000;
+				resultsArray.push([]);
+
+				for(var i = 0; i < 50; i++) {
+					var centroids = kmeans.progress(1);
+
+					var value = 
+					_.reduce(
+						_.map(centroids.centers, function(center) {
+							return center.data.length === 0 ? 0 : center.data.length === 1 ?  kmeans.euclidean(center.data[0], center.position) :
+							_.reduce(center.data, function (cur, next) {
+								
+								return kmeans.euclidean(next, center.position) + ((cur instanceof Array) ? kmeans.euclidean(cur, center.position) : cur);
+							});
+					}),	function (cur, next) {
+						console.log(cur);
+						return cur + next;
 					});
-				}), function (cur, next) {
-					return cur + next;
-				});
 
-				bestResult = Math.min(bestResult, value);
+					if(bestResult == NaN)
+						continue;
+
+					bestResult = Math.min(bestResult, value);
+					resultsArray[m].push(bestResult);
+				}
 			}
+			
+
+			results += transformResults(resultsArray);
+
+
 			console.log(bestResult);
 			break;
 		case ('compete') :
-			for(var i = 0; i < 1000; i++) {
-				compete.train(data);
-				bestResult = Math.min(bestResult, determineClusterDistances(data, compete.centers));
+			console.log(args[2] + " compete");
+			var resultsArray = [];
+
+			for(var i = 0; i < 10; i++) {
+				compete.init(data);
+				bestResult = 10000000000000000000;
+				resultsArray.push([]);
+
+
+				for(var j = 0; j < 50; j++) {
+					var result = compete.progress(5, data);
+					
+					var value = 
+					_.reduce(
+						_.map(result.centers, function(center) {
+							return center.data.length === 0 ? 0 : center.data.length === 1 ?  kmeans.euclidean(center.data[0], center.position) :
+							_.reduce(center.data, function (cur, next) {
+								return kmeans.euclidean(next, center.position) + ((cur instanceof Array) ? kmeans.euclidean(cur, center.position) : cur);
+							});
+					}),	function (cur, next) {
+						return cur + next;
+					});
+
+					if(bestResult == NaN)
+						continue;
+
+					bestResult = Math.min(bestResult, value);
+					resultsArray[i].push(bestResult);
+				}
 			}
+
+			results += transformResults(resultsArray);
 
 			break;
 		default:
@@ -112,4 +159,16 @@ function storeData(filename, data, callback) {
             }
         }
     });
+}
+
+function transformResults(resultsArray) {
+	var results = "";
+	for(var i = 0; i < resultsArray[0].length; i++) {
+		for(var j = 0; j < resultsArray.length; j++) {
+			results += resultsArray[j][i] + ',';
+		}
+		results += "\n";
+	}
+
+	return results;
 }
