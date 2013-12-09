@@ -1,5 +1,5 @@
 var fs = require('fs');
-var filePrefix = './data/project3_data/';
+var filePrefix = './data/project4_data/';
 var _ = require('lodash');
 
 function toNumber(arr, classificationSymbols) {
@@ -69,16 +69,6 @@ function banknote(callback, small) {
 	});
 }
 
-function casp(callback, small) {
-	fs.readFile(filePrefix + 'casp' + (small ? '.small' : '') + '.data', function (err, data) {
-		if (err) {
-			console.log(err);
-		}
-		var lines = data.toString().split('\n');
-	    callback(buildRegressionData(lines, ' '), 9, 1);
-	});
-}
-
 function diabetes(callback, small) {
 	fs.readFile(filePrefix + 'diabetes' + (small ? '.small' : '') + '.data', function (err, data) {
 		var lines = data.toString().split('\n');
@@ -93,17 +83,24 @@ function ecoli(callback, small) {
 	});
 }
 
-function energyEfficiency(callback, small) {
-	fs.readFile(filePrefix + 'energy_efficiency' + (small ? '.small' : '') + '.data', function (err, data) {
+function glass(callback, small) {
+	fs.readFile(filePrefix + 'glass' + (small ? '.small' : '') + '.data', function (err, data) {
 		var lines = data.toString().split('\n');
-	    callback(buildRegressionData(lines, ' '), 9, 1);
+	    callback(buildClassificationData(lines, 7, ','), 9, 1);
 	});
 }
 
-function machine(callback, small) {
-	fs.readFile(filePrefix + 'machine' + (small ? '.small' : '') + '.data', function (err, data) {
+function lung(callback, small) {
+	fs.readFile(filePrefix + 'lung' + (small ? '.small' : '') + '.data', function (err, data) {
 		var lines = data.toString().split('\n');
-	    callback(buildRegressionData(lines, ','), 9, 1);
+	    callback(buildClassificationData(lines, 3, ','), 56, 1);
+	});
+}
+
+function magic(callback, small) {
+	fs.readFile(filePrefix + 'magic' + (small ? '.small' : '') + '.data', function (err, data) {
+		var lines = data.toString().split('\n');
+	    callback(buildClassificationData(lines, 2, ','), 10, 1);
 	});
 }
 
@@ -117,7 +114,7 @@ function mammograph(callback, small) {
 function seeds(callback, small) {
 	fs.readFile(filePrefix + 'seeds' + (small ? '.small' : '') + '.data', function (err, data) {
 		var lines = data.toString().split('\n');
-	    callback(buildClassificationData(lines, ' '), 7, 1);
+	    callback(buildClassificationData(lines, 3, '\t'), 7, 1);
 	});
 }
 
@@ -128,10 +125,10 @@ function transfusion(callback, small) {
 	});
 }
 
-function yacht(callback, small) {
-	fs.readFile(filePrefix + 'yacht' + (small ? '.small' : '') + '.data', function (err, data) {
+function wine(callback, small) {
+	fs.readFile(filePrefix + 'transfusion' + (small ? '.small' : '') + '.data', function (err, data) {
 		var lines = data.toString().split('\n');
-	    callback(buildRegressionData(lines, ' '), 6, 1);
+	    callback(buildClassificationData(lines, 0, ','), 13, 0);
 	});
 }
 
@@ -151,7 +148,7 @@ function buildClassificationData(lines, outputSize, delimiter) {
         output[outputIdx] = 1;
 
         returnData.push(data);
-        returnData.push(output);
+        //returnData.push(output);
     }
 
     return returnData;
@@ -179,12 +176,6 @@ module.exports = {
 	'banknote-small': function(callback) {
 		banknote(callback, true, true);
 	},
-	'casp': function(callback) {
-		casp(callback, false, true);
-	},
-	'casp-small': function(callback) {
-		casp(callback, true, true);
-	},
 	'diabetes': function(callback) {
 		diabetes(callback, false, true);
 	},
@@ -197,17 +188,23 @@ module.exports = {
 	'ecoli-small': function(callback) {
 		ecoli(callback, true, true);
 	},
-	'energy-efficiency': function(callback) {
-		energyEfficiency(callback, false, true);
+	'glass': function(callback) {
+		glass(callback, false, true);
 	},
-	'energy-efficiency-small': function(callback) {
-		energyEfficiency(callback, true, true);
+	'glass-small': function(callback) {
+		glass(callback, true, true);
 	},
-	'machine': function(callback) {
-		machine(callback, false, true);
+	'lung': function(callback) {
+		lung(callback, false, true);
 	},
-	'machine-small': function(callback) {
-		machine(callback, true, true);
+	'lung-small': function(callback) {
+		lung(callback, true, true);
+	},
+	'magic': function(callback) {
+		mammograph(callback, false, true);
+	},
+	'magic-small': function(callback) {
+		mammograph(callback, true, true);
 	},
 	'mammograph': function(callback) {
 		mammograph(callback, false, true);
@@ -227,11 +224,11 @@ module.exports = {
 	'transfusion-small': function(callback) {
 		transfusion(callback, true, true);
 	},
-	'yacht': function(callback) {
-		yacht(callback, false, true);
+	'wine': function(callback) {
+		wine(callback, false, true);
 	},
-	'yacht-small': function(callback) {
-		yacht(callback, true, true);
+	'wine-small': function(callback) {
+		wine(callback, true, true);
 	},
 	transformOutput: transformOutput
 };

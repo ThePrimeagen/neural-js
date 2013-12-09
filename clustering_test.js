@@ -1,4 +1,4 @@
-var testData = require('./data/project3_data/data-parser');
+var testData = require('./data/project4_data/data-parser');
 var defaults = require('./lib/defaults');
 var _ = require('lodash');
 var args = process.argv;
@@ -22,6 +22,9 @@ function ready(data, numberOfInputs, numberOfOutputs) {
 	var clusteringMethod = null;
 	var results = "";
 
+	var filename = args[2].replace('-', '_');
+    filename += args[3];
+
 	switch(clusteringType) {
 		case ('aco') : 
 			aco.init(data);
@@ -32,6 +35,7 @@ function ready(data, numberOfInputs, numberOfOutputs) {
 
 			break;
 		case ('pso') :
+			console.log(args[2] + " pso");
 			var options = {
 				numSwarms: args[4],		//The number of desierd swarms
 				numClusters: args[5],	//The number of desired clusters
@@ -40,22 +44,48 @@ function ready(data, numberOfInputs, numberOfOutputs) {
 				w: args[8]				//The inertia
 			};
 
+			filename += args[6] + args[7] + args[8];
+			var resultsArray = [];
 			//Initialze the PSO, then run it a bunch of times, logging the results as we go
-			pso.init(options.numSwarms, options.numClusters, data);
-			for(var i = 0; i < 500; i++) {
-				bestResult = Math.min(bestResult, pso.progress(10, options, data));
+			for(var m = 0; m < 10; m++) {
+				bestResult = 10000000000000000000;
+				pso.init(options.numSwarms, options.numClusters, data);
+				resultsArray.push([]);
+				for(var i = 0; i < 50; i++) {
+					var best = pso.progress(1, options, data);
+
+					bestResult = Math.min(bestResult, best.min);
+					resultsArray[m].push(bestResult);
+				}
 				console.log(bestResult);
-				results += bestResult + "\n";
 			}
+
+			for(var i = 0; i < resultsArray[0].length; i++) {
+				for(var j = 0; j < resultsArray.length; j++) {
+					results += resultsArray[j][i] + ',';
+				}
+				results += "\n";
+			}
+			
 
 			break;
 		case ('kmeans') :
-			kmeans.init(data);
-			for(var i = 0; i < 1000; i++) {
-				kmeans.progress(50);
-				bestResult = Math.min(bestResult, determineClusterDistances(data, kmeans.centers));
+			console.log(args[2] + " k-means");
+			kmeans.init({ data: data, numCenters : args[4] });
+			for(var i = 0; i < 50; i++) {
+				var centroids = kmeans.progress(1);
+
+				var value = _.reduce(_.map(centroids.centers, function(center) {
+					return _.reduce(center.data, function (cur, next) {
+						return kmeans.euclidean(next, center.position) + ((cur instanceof Array) ? kmeans.euclidean(cur, center.position) : cur);
+					});
+				}), function (cur, next) {
+					return cur + next;
+				});
+
+				bestResult = Math.min(bestResult, value);
 			}
-			
+			console.log(bestResult);
 			break;
 		case ('compete') :
 			for(var i = 0; i < 1000; i++) {
@@ -68,13 +98,12 @@ function ready(data, numberOfInputs, numberOfOutputs) {
 			break;
 	}
 
-    var filename = args[2].replace('-', '_');
-    filename += args[3];
+    
     storeData(filename, results);
 }
 
 function storeData(filename, data, callback) {
-    fs.appendFile('./data/project3_data/results/' + filename + '.csv', data + '\n', function (err) {
+    fs.appendFile('./data/project4_data/results/' + filename + '.csv', data + '\n', function (err) {
         if (err) {
             console.log(err);
         } else {
