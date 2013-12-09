@@ -18,7 +18,7 @@ function determineClusterDistances(inputs, centers) {
 
 function ready(data, numberOfInputs, numberOfOutputs) {
 	var clusteringType = args[3];
-	var bestResult = 2000000000; //Some arbitrarily large value
+	var bestResult = 2000000000000; //Some arbitrarily large value
 	var clusteringMethod = null;
 	var results = "";
 
@@ -44,10 +44,15 @@ function ready(data, numberOfInputs, numberOfOutputs) {
 				w: args[8]				//The inertia
 			};
 
+			//Initialize the filename and results object
 			filename += args[6] + args[7] + args[8];
 			var resultsArray = [];
+
+
 			//Initialze the PSO, then run it a bunch of times, logging the results as we go
 			for(var m = 0; m < 10; m++) {
+
+				//Reinitialize the swarm, and reset the best fitness tracker
 				bestResult = 10000000000000000000;
 				pso.init(options.numSwarms, options.numClusters, data);
 				resultsArray.push([]);
@@ -70,31 +75,25 @@ function ready(data, numberOfInputs, numberOfOutputs) {
 			console.log(args[2] + " k-means");
 			var resultsArray = [];
 			
-
+			
 			for(var m = 0; m < 10; m ++) {
+
+				//Initialize the competitive network, and redefault the best result found
 				kmeans.init({ data: data, numCenters : args[4] });
 				bestResult = 10000000000000000000;
 				resultsArray.push([]);
 
+				//Loop 50 times, to create data points
 				for(var i = 0; i < 50; i++) {
+
+					//Progress the algorithm a single step
 					var centroids = kmeans.progress(1);
 
-					var value = 
-					_.reduce(
-						_.map(centroids.centers, function(center) {
-							return center.data.length === 0 ? 0 : center.data.length === 1 ?  kmeans.euclidean(center.data[0], center.position) :
-							_.reduce(center.data, function (cur, next) {
-								
-								return kmeans.euclidean(next, center.position) + ((cur instanceof Array) ? kmeans.euclidean(cur, center.position) : cur);
-							});
-					}),	function (cur, next) {
-						console.log(cur);
-						return cur + next;
-					});
+					//Find the 'fitness' of the clusters
+					var value = transformClustersToFitness(centroids.centers);
 
-					if(bestResult == NaN)
-						continue;
 
+					//Find the best result, and store it in the results object
 					bestResult = Math.min(bestResult, value);
 					resultsArray[m].push(bestResult);
 				}
@@ -111,29 +110,27 @@ function ready(data, numberOfInputs, numberOfOutputs) {
 			var resultsArray = [];
 
 			for(var i = 0; i < 10; i++) {
+
+				//Initialize the competitive network, and redefault the best result found
 				compete.init(data);
 				bestResult = 10000000000000000000;
 				resultsArray.push([]);
 
-
+				//Loop 50 times, to create data points
 				for(var j = 0; j < 50; j++) {
+
+					//Progress the algorithm 5 steps
 					var result = compete.progress(5, data);
 					
-					var value = 
-					_.reduce(
-						_.map(result.centers, function(center) {
-							return center.data.length === 0 ? 0 : center.data.length === 1 ?  kmeans.euclidean(center.data[0], center.position) :
-							_.reduce(center.data, function (cur, next) {
-								return kmeans.euclidean(next, center.position) + ((cur instanceof Array) ? kmeans.euclidean(cur, center.position) : cur);
-							});
-					}),	function (cur, next) {
-						return cur + next;
-					});
 
-					if(bestResult == NaN)
-						continue;
+					//Find the 'fitness' of the clusters
+					var value = transformClustersToFitness(result.centers);
+					
 
+					//Compare the fitness to the best result stored so far
 					bestResult = Math.min(bestResult, value);
+
+					//Store the result in our results object
 					resultsArray[i].push(bestResult);
 				}
 			}
@@ -149,6 +146,8 @@ function ready(data, numberOfInputs, numberOfOutputs) {
     storeData(filename, results);
 }
 
+
+//Stores the data in the given filename, with the text data, and calls the callback once complete
 function storeData(filename, data, callback) {
     fs.appendFile('./data/project4_data/results/' + filename + '.csv', data + '\n', function (err) {
         if (err) {
@@ -161,6 +160,8 @@ function storeData(filename, data, callback) {
     });
 }
 
+
+//Transforms the results array into a .csv format for exporting
 function transformResults(resultsArray) {
 	var results = "";
 	for(var i = 0; i < resultsArray[0].length; i++) {
@@ -171,4 +172,18 @@ function transformResults(resultsArray) {
 	}
 
 	return results;
+}
+
+
+//Transforms the object centers [{data : [], position : []}...] in to a fitness value based on the intercluster distance
+function transformClustersToFitness(centers) {
+	return _.reduce(
+				_.map(centers, function(center) {
+					return center.data.length === 0 ? 0 : center.data.length === 1 ?  kmeans.euclidean(center.data[0], center.position) :
+					_.reduce(center.data, function (cur, next) {
+						return kmeans.euclidean(next, center.position) + ((cur instanceof Array) ? kmeans.euclidean(cur, center.position) : cur);
+					});
+			}),	function (cur, next) {
+				return cur + next;
+			});
 }
